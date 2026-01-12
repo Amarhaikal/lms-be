@@ -42,7 +42,8 @@ pipeline {
                     echo 'Stopping old containers...'
                     sh """
                         cd /var/www/lms/lms-be
-                        docker compose down || true
+                        docker compose down -v || true
+                        docker rm -f lms-mysql lms-backend || true
                     """
                 }
             }
