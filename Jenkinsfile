@@ -51,9 +51,8 @@ pipeline {
             steps {
                 script {
                     echo 'Deploying new containers...'
-                    sh """
-                        docker-compose up -d
-                    """
+                    sh 'docker compose down'
+                    sh 'docker compose up -d'
                 }
             }
         }
