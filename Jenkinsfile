@@ -41,7 +41,8 @@ pipeline {
                 script {
                     echo 'Stopping old containers...'
                     sh """
-                        docker-compose down || true
+                        cd /var/www/lms/lms-be
+                        docker compose down || true
                     """
                 }
             }
@@ -51,8 +52,10 @@ pipeline {
             steps {
                 script {
                     echo 'Deploying new containers...'
-                    sh 'docker compose down'
-                    sh 'docker compose up -d'
+                    sh """
+                        cd /var/www/lms/lms-be
+                        docker compose up -d --build
+                    """
                 }
             }
         }
@@ -62,7 +65,8 @@ pipeline {
                 script {
                     echo 'Running database migrations...'
                     sh """
-                        docker exec lms-backend dotnet ef database update --verbose
+                        cd /var/www/lms/lms-be
+                        docker exec lms-backend dotnet ef database update --verbose || true
                     """
                 }
             }
