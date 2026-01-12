@@ -1,0 +1,36 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace LMS.Models.Parameter;
+
+[Table("code_types")]
+public class CodeType
+{
+    [Column("id")]
+    public int Id { get; set; }
+
+    [Column("code")]
+    [Required(ErrorMessage = "Code type code is required")]
+    [MaxLength(50, ErrorMessage = "Code type code cannot exceed 50 characters")]
+    public string Code { get; set; } = null!;
+
+    [Column("description")]
+    [Required(ErrorMessage = "Description is required")]
+    [MaxLength(255, ErrorMessage = "Description cannot exceed 255 characters")]
+    public string Description { get; set; } = null!;
+
+    [Column("created_by")]
+    public int? CreatedBy { get; set; }
+
+    [Column("created_at")]
+    public DateTime CreatedAt { get; set; }
+
+    [Column("updated_by")]
+    public int? UpdatedBy { get; set; }
+
+    [Column("updated_at")]
+    public DateTime? UpdatedAt { get; set; }
+
+    // Navigation property
+    public ICollection<SystemCode> SystemCodes { get; set; } = new List<SystemCode>();
+}

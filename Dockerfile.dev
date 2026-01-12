@@ -1,0 +1,24 @@
+# Development Dockerfile with hot reload support
+FROM mcr.microsoft.com/dotnet/sdk:9.0
+WORKDIR /src
+
+# Install dotnet-ef tools (specify version for stability)
+RUN dotnet tool install --global dotnet-ef --version 9.0.0
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
+# Copy csproj and restore
+COPY ["lms-be.csproj", "./"]
+RUN dotnet restore "lms-be.csproj"
+
+# Copy everything
+COPY . .
+
+# Expose ports
+EXPOSE 8080
+
+# Set environment
+ENV ASPNETCORE_URLS=http://+:8080
+ENV ASPNETCORE_ENVIRONMENT=Development
+
+# Run with watch for hot reload
+CMD ["dotnet", "watch", "run", "--no-launch-profile"]
