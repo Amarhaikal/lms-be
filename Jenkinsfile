@@ -61,18 +61,6 @@ pipeline {
             }
         }
         
-        stage('Run Migrations') {
-            steps {
-                script {
-                    echo 'Running database migrations...'
-                    sh """
-                        cd /var/www/lms/lms-be
-                        docker exec lms-backend dotnet ef database update --verbose || true
-                    """
-                }
-            }
-        }
-        
         stage('Health Check') {
             steps {
                 script {
