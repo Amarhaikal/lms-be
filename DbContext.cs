@@ -35,15 +35,29 @@ namespace LMS.Data
                 new CodeType
                 {
                     Id = 1,
-                    Code = "USER_STATUS",
+                    Code = "USR_STS",
                     Description = "User Status Types",
                     CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
                 },
                 new CodeType
                 {
                     Id = 2,
-                    Code = "USER_ROLE",
+                    Code = "USR_RL",
                     Description = "User Role Types",
+                    CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
+                },
+                new CodeType
+                {
+                    Id = 3,
+                    Code = "CTRY",
+                    Description = "Country",
+                    CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
+                },
+                new CodeType
+                {
+                    Id = 4,
+                    Code = "STT",
+                    Description = "State",
                     CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
                 }
             );
@@ -113,6 +127,64 @@ namespace LMS.Data
                     CodeTypeId = 2,
                     Code = "PADM",
                     Description = "Parameter Admin",
+                    CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
+                },
+                // Country
+                new SystemCode
+                {
+                    Id = 9,
+                    CodeTypeId = 3,
+                    Code = "MY",
+                    Description = "Malaysia",
+                    CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
+                },
+                new SystemCode
+                {
+                    Id = 10,
+                    CodeTypeId = 3,
+                    Code = "SG",
+                    Description = "Singapore",
+                    CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
+                },
+                new SystemCode
+                {
+                    Id = 11,
+                    CodeTypeId = 3,
+                    Code = "TH",
+                    Description = "Thailand",
+                    CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
+                },
+                new SystemCode
+                {
+                    Id = 12,
+                    CodeTypeId = 3,
+                    Code = "ID",
+                    Description = "Indonesia",
+                    CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
+                },
+                // State
+                new SystemCode
+                {
+                    Id = 13,
+                    CodeTypeId = 4,
+                    Code = "10",
+                    Description = "Selangor",
+                    CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
+                },
+                new SystemCode
+                {
+                    Id = 14,
+                    CodeTypeId = 4,
+                    Code = "11",
+                    Description = "Kuala Lumpur",
+                    CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
+                },
+                new SystemCode
+                {
+                    Id = 15,
+                    CodeTypeId = 4,
+                    Code = "12",
+                    Description = "Johor",
                     CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
                 }
             );
