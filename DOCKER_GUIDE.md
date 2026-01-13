@@ -55,8 +55,8 @@ docker compose -f docker-compose.dev.yml up -d
 # 3. Check status
 docker compose -f docker-compose.dev.yml ps
 
-# 4. Run migrations (create tables)
-docker exec lms-backend-dev dotnet ef database update
+# 4. Run migrations (create tables) - on your Mac
+dotnet ef database update
 
 # 5. Access API
 open http://localhost:5001
@@ -331,32 +331,83 @@ Then access at: http://localhost:8081
 
 ## 🗄️ Database Management
 
-### **Run Migrations**
+### **Understanding Migration Operations**
+
+There are **two different operations** when working with migrations:
+
+1. **Creating Migrations** (design-time) - Must be done on your Mac
+2. **Applying Migrations** (runtime) - Can be done either way
+
+---
+
+### **Create New Migration** ✏️
+
+**Always run this on your Mac (outside Docker):**
 
 ```bash
-# Development
-docker exec -it lms-backend-dev dotnet ef database update
+# On your Mac
+dotnet ef migrations add MigrationName
+```
 
-# Production
+**Why?** Creating migrations requires design-time tools and connection configuration that works best outside the container.
+
+---
+
+### **Apply Migrations** 🚀
+
+**Recommended: Run on your Mac (easiest for local development)**
+
+```bash
+# On your Mac - connects to Docker MySQL on localhost:3307
+dotnet ef database update
+```
+
+**Alternative: Run inside Docker container**
+
+```bash
+# Inside container (may require additional configuration)
+docker exec -it lms-backend-dev dotnet ef database update
+```
+
+**Production (Server):**
+
+```bash
+# On server
 docker exec -it lms-backend dotnet ef database update
 ```
 
-### **Create New Migration**
+---
+
+### **Complete Migration Workflow**
 
 ```bash
-docker exec -it lms-backend-dev dotnet ef migrations add MigrationName
+# 1. Make changes to your DbContext.cs or models
+
+# 2. Create migration (on your Mac)
+dotnet ef migrations add AddNewFeature
+
+# 3. Review the generated migration file in Migrations/ folder
+
+# 4. Apply migration (on your Mac)
+dotnet ef database update
+
+# 5. Verify in database
+docker exec lms-mysql-dev mysql -u lms_user -plms_password lms_db -e "SHOW TABLES;"
 ```
 
-### **View Migration Status**
+---
+
+### **Other Migration Commands**
 
 ```bash
-docker exec -it lms-backend-dev dotnet ef migrations list
-```
+# View migration status (on your Mac)
+dotnet ef migrations list
 
-### **Rollback Migration**
+# Rollback to previous migration (on your Mac)
+dotnet ef database update PreviousMigrationName
 
-```bash
-docker exec -it lms-backend-dev dotnet ef database update PreviousMigrationName
+# Remove last migration (on your Mac, before applying it)
+dotnet ef migrations remove
 ```
 
 ---
@@ -422,14 +473,14 @@ docker-compose -f docker-compose.dev.yml up -d
 # 2. Wait for MySQL to be ready (~10 seconds)
 docker-compose -f docker-compose.dev.yml logs -f mysql
 
-# 3. Create database tables
-docker exec -it lms-backend-dev dotnet ef database update
+# 3. Create database tables (run on your Mac)
+dotnet ef database update
 
 # 4. Verify it's working
 open http://localhost:5001
 
 # 5. View database (optional)
-# Use MySQL Workbench or Adminer
+# Use MySQL Workbench, Adminer (http://localhost:8081), or command line
 ```
 
 ### **Daily Development**
@@ -441,9 +492,12 @@ docker-compose -f docker-compose.dev.yml up -d
 # Code in VS Code
 # Changes auto-reload! ✨
 
-# Test new migration
-docker exec -it lms-backend-dev dotnet ef migrations add NewFeature
-docker exec -it lms-backend-dev dotnet ef database update
+# When you modify DbContext or models:
+# 1. Create migration (on your Mac)
+dotnet ef migrations add NewFeature
+
+# 2. Apply migration (on your Mac)
+dotnet ef database update
 
 # Evening: Stop containers (data kept!)
 docker-compose -f docker-compose.dev.yml down
