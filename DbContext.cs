@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using LMS.Models.User;
 using LMS.Models.Parameter;
+using LMS.Models.Common;
 
 namespace LMS.Data
 {
@@ -13,7 +14,10 @@ namespace LMS.Data
 
         // User Access Control
         public DbSet<User> Users { get; set; }
+
+        // Common
         public DbSet<Screen> Screens { get; set; }
+        public DbSet<Address> Addresses { get; set; }
 
         // Parameters
         public DbSet<CodeType> CodeTypes { get; set; }
