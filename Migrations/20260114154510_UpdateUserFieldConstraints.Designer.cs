@@ -4,6 +4,7 @@ using LMS.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LMS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260114154510_UpdateUserFieldConstraints")]
+    partial class UpdateUserFieldConstraints
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -242,7 +245,7 @@ namespace LMS.Migrations
                             Code = "ACTIVE",
                             CodeTypeId = 1,
                             CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Active User"
+                            Description = "Active"
                         },
                         new
                         {
@@ -250,7 +253,7 @@ namespace LMS.Migrations
                             Code = "INACTIVE",
                             CodeTypeId = 1,
                             CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Inactive User"
+                            Description = "Inactive"
                         },
                         new
                         {
@@ -258,15 +261,15 @@ namespace LMS.Migrations
                             Code = "SUSPENDED",
                             CodeTypeId = 1,
                             CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Suspended User"
+                            Description = "Suspended"
                         },
                         new
                         {
                             Id = 4,
-                            Code = "PENDING",
+                            Code = "NEW",
                             CodeTypeId = 1,
                             CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Pending Approval"
+                            Description = "New"
                         },
                         new
                         {
@@ -291,14 +294,6 @@ namespace LMS.Migrations
                             CodeTypeId = 2,
                             CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Supervisor"
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Code = "PADM",
-                            CodeTypeId = 2,
-                            CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Parameter Admin"
                         },
                         new
                         {
