@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using LMS.Models.Common;
 using LMS.Models.Parameter;
 
 namespace LMS.Models.User;
@@ -31,12 +32,17 @@ public class User
 
     [Column("id_no")]
     [Required(ErrorMessage = "ID No. is required")]
-    [MaxLength(70, ErrorMessage = "ID No. cannot exceed 70 characters")]
+    [MaxLength(12, ErrorMessage = "ID No. cannot exceed 12 characters")]
     public string IdNo { get; set; } = null!;
 
     [Column("phone_no")]
     [MaxLength(20, ErrorMessage = "Phone number cannot exceed 20 characters")]
     public string? PhoneNo { get; set; }
+
+    [Column("address_id")]
+    public int? AddressId { get; set; }
+    [ForeignKey("AddressId")]
+    public Address? Address { get; set; }
 
     [Column("status_id")]
     [Required(ErrorMessage = "Status is required")]
