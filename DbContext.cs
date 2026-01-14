@@ -66,14 +66,15 @@ namespace LMS.Data
                 }
             );
 
-            // Seed data for SystemCodes - User Status
+            // Seed data for SystemCodes
             modelBuilder.Entity<SystemCode>().HasData(
+                // User Status
                 new SystemCode
                 {
                     Id = 1,
                     CodeTypeId = 1,
                     Code = "ACTIVE",
-                    Description = "Active User",
+                    Description = "Active",
                     CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
                 },
                 new SystemCode
@@ -81,7 +82,7 @@ namespace LMS.Data
                     Id = 2,
                     CodeTypeId = 1,
                     Code = "INACTIVE",
-                    Description = "Inactive User",
+                    Description = "Inactive",
                     CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
                 },
                 new SystemCode
@@ -89,15 +90,15 @@ namespace LMS.Data
                     Id = 3,
                     CodeTypeId = 1,
                     Code = "SUSPENDED",
-                    Description = "Suspended User",
+                    Description = "Suspended",
                     CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
                 },
                 new SystemCode
                 {
                     Id = 4,
                     CodeTypeId = 1,
-                    Code = "PENDING",
-                    Description = "Pending Approval",
+                    Code = "NEW",
+                    Description = "New",
                     CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
                 },
                 // User Roles
@@ -125,14 +126,7 @@ namespace LMS.Data
                     Description = "Supervisor",
                     CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
                 },
-                new SystemCode
-                {
-                    Id = 8,
-                    CodeTypeId = 2,
-                    Code = "PADM",
-                    Description = "Parameter Admin",
-                    CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
-                },
+
                 // Country
                 new SystemCode
                 {
