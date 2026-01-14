@@ -16,9 +16,14 @@ public class User
     [MaxLength(120, ErrorMessage = "Fullname cannot exceed 120 characters")]
     public string Fullname { get; set; } = null!;
 
+    [Column("id_no")]
+    [Required(ErrorMessage = "ID No. is required")]
+    [MaxLength(12, ErrorMessage = "ID No. cannot exceed 12 characters")]
+    public string IdNo { get; set; } = null!;
+
     [Column("username")]
     [Required(ErrorMessage = "Username is required")]
-    [MaxLength(150, ErrorMessage = "Username cannot exceed 100 characters")]
+    [MaxLength(30, ErrorMessage = "Username cannot exceed 30 characters")]
     public string Username { get; set; } = null!;
 
     [Column("email")]
@@ -30,13 +35,8 @@ public class User
     [Required(ErrorMessage = "Password is required")]
     public string Password { get; set; } = null!;
 
-    [Column("id_no")]
-    [Required(ErrorMessage = "ID No. is required")]
-    [MaxLength(12, ErrorMessage = "ID No. cannot exceed 12 characters")]
-    public string IdNo { get; set; } = null!;
-
     [Column("phone_no")]
-    [MaxLength(20, ErrorMessage = "Phone number cannot exceed 20 characters")]
+    [MaxLength(12, ErrorMessage = "Phone number cannot exceed 12 characters")]
     public string? PhoneNo { get; set; }
 
     [Column("address_id")]
