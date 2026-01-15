@@ -6,12 +6,13 @@ namespace LMS.Controllers.Common
     public class BaseApiController : ControllerBase
     {
 
-        protected IActionResult CResponseRegisterSuccessful(string? message = null)
+        protected IActionResult CResponseRegisterSuccessful<T>(T data)
         {
-            var response = new ApiResponse<string>
+            var response = new ApiResponse<T>
             {
                 Status = 200,
-                Message = message ?? "Registration successful",
+                Message = "Registration successful",
+                Data = data
             };
             return Ok(response);
         }
