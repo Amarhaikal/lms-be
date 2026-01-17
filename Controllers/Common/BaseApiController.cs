@@ -6,13 +6,12 @@ namespace LMS.Controllers.Common
     public class BaseApiController : ControllerBase
     {
 
-        protected IActionResult CResponseRegisterSuccessful<T>(T data)
+        protected IActionResult CResponseRegisterSuccessful()
         {
-            var response = new ApiResponse<T>
+            var response = new ApiResponse<string>
             {
                 Status = 200,
                 Message = "Registration successful",
-                Data = data
             };
             return Ok(response);
         }
@@ -120,6 +119,41 @@ namespace LMS.Controllers.Common
                 Message = "Data not found"
             };
             return NotFound(response);
+        }
+
+        protected IActionResult CResponseLoginSuccessful<T>(string token, T user)
+        {
+            var response = new
+            {
+                Status = 200,
+                Message = "Login successful",
+                Data = new
+                {
+                    Token = token,
+                    User = user
+                }
+            };
+            return Ok(response);
+        }
+
+        protected IActionResult CResponseUnauthorized(string message = "Invalid username or password")
+        {
+            var response = new ApiResponse<string>
+            {
+                Status = 401,
+                Message = message
+            };
+            return Unauthorized(response);
+        }
+
+        protected IActionResult CResponseAlreadyLoggedIn()
+        {
+            var response = new ApiResponse<string>
+            {
+                Status = 409,
+                Message = "Your account is already logged in from another session. Please logout from the other device first."
+            };
+            return Conflict(response);
         }
 
     }

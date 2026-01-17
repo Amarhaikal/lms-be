@@ -67,4 +67,13 @@ public class User
 
     [Column("updated_at")]
     public DateTime? UpdatedAt { get; set; }
+
+    [Column("failed_login_attempts")]
+    public int FailedLoginAttempts { get; set; }
+
+    [Column("locked_until")]
+    public DateTime? LockedUntil { get; set; }
+
+    // Navigation properties
+    public ICollection<Session.Session>? Sessions { get; set; }
 }

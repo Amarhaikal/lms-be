@@ -23,6 +23,12 @@ namespace LMS.Data
         public DbSet<CodeType> CodeTypes { get; set; }
         public DbSet<SystemCode> SystemCodes { get; set; }
 
+        // Sessions
+        public DbSet<Models.Session.Session> Sessions { get; set; }
+
+        // Audit Logs
+        public DbSet<Models.Audit.AuditLog> AuditLogs { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
