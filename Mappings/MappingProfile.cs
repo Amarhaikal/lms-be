@@ -15,6 +15,7 @@ namespace LMS.Mappings
             CreateMap<SystemCode, SystemCodeNestedDto>();
             CreateMap<User, UserDetailsDto>()
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role));
+            CreateMap<Models.Session.Session, LMS.DTOs.Session.SessionDto>();
 
             // DTO to Entity mappings
             CreateMap<CodeTypeCreateDto, CodeType>();
