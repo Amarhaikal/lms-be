@@ -18,11 +18,11 @@ namespace LMS.Controllers.Auth
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly ILogger<AuthController> _logger;
-        private readonly LMS.Services.JwtService _jwtService;
-        private readonly LMS.Services.AuditService _auditService;
+        private readonly LMS.Services.Auth.JwtService _jwtService;
+        private readonly LMS.Services.Auth.AuditService _auditService;
 
         public AuthController(ApplicationDbContext context, IMapper mapper, ILogger<AuthController> logger,
-            LMS.Services.JwtService jwtService, LMS.Services.AuditService auditService)
+            LMS.Services.Auth.JwtService jwtService, LMS.Services.Auth.AuditService auditService)
         {
             _context = context;
             _mapper = mapper;
