@@ -22,10 +22,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddAutoMapper(typeof(Program));
 
 // Add JWT Service
-builder.Services.AddScoped<LMS.Services.JwtService>();
+builder.Services.AddScoped<LMS.Services.Auth.JwtService>();
 
 // Add Audit Service
-builder.Services.AddScoped<LMS.Services.AuditService>();
+builder.Services.AddScoped<LMS.Services.Auth.AuditService>();
 builder.Services.AddHttpContextAccessor();
 
 // Configure JWT Authentication
