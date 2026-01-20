@@ -83,6 +83,25 @@ namespace LMS.Middleware
                         return;
                     }
 
+                    // Check for inactivity timeout (15 minutes)
+                    if (session.LastActivityAt.HasValue &&
+                        session.LastActivityAt.Value < DateTime.UtcNow.AddMinutes(-15))
+                    {
+                        session.IsActive = false;
+                        session.LogoutReason = "Inactivity Timeout";
+                        session.LoggedOutAt = DateTime.UtcNow;
+                        await dbContext.SaveChangesAsync();
+
+                        context.Response.StatusCode = 401;
+                        context.Response.ContentType = "application/json";
+                        await context.Response.WriteAsJsonAsync(new
+                        {
+                            Status = 401,
+                            Message = "Session timed out due to inactivity. Please login again."
+                        });
+                        return;
+                    }
+
                     // Update last activity time
                     session.LastActivityAt = DateTime.UtcNow;
                     await dbContext.SaveChangesAsync();
