@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using LMS.Models.Auth;
 using LMS.Models.Common;
 using LMS.Models.Parameter;
 
@@ -56,6 +57,12 @@ public class User
     [ForeignKey("RoleId")]
     public SystemCode? Role { get; set; }
 
+    [Column("password_changed_at")]
+    public DateTime? PasswordChangedAt { get; set; }
+
+    [Column("force_password_change")]
+    public bool ForcePasswordChange { get; set; } = false;
+
     [Column("created_by")]
     public int? CreatedBy { get; set; }
 
@@ -76,4 +83,6 @@ public class User
 
     // Navigation properties
     public ICollection<Session.Session>? Sessions { get; set; }
+
+    public ICollection<PasswordHistory>? PasswordHistories { get; set; }
 }
