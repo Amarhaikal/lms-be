@@ -118,6 +118,14 @@ namespace LMS.Data
                 },
                 new SystemCode
                 {
+                    Id = 8,
+                    CodeTypeId = 2,
+                    Code = "ADM",
+                    Description = "Admin",
+                    CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
+                },
+                new SystemCode
+                {
                     Id = 6,
                     CodeTypeId = 2,
                     Code = "OFCR",
