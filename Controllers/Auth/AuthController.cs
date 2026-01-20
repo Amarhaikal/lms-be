@@ -225,39 +225,46 @@ namespace LMS.Controllers.Auth
         }
 
         [HttpPost("logout")]
-        public async Task<IActionResult> Logout([FromBody] LoginRequest request)
+        public async Task<IActionResult> Logout()
         {
             try
             {
-                // Find user by username or email
-                var user = await _context.Users
-                    .FirstOrDefaultAsync(u => u.Username == request.Username || u.Email == request.Username);
-
-                if (user == null)
+                // Extract token from Authorization header
+                var authHeader = HttpContext.Request.Headers["Authorization"].ToString();
+                if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
                 {
-                    return CResponseUnauthorized("Invalid username or password");
+                    return CResponseUnauthorized("No token provided");
                 }
 
-                // Verify password
-                bool isPasswordValid = BCrypt.Net.BCrypt.Verify(request.Password, user.Password);
-                if (!isPasswordValid)
+                var token = authHeader.Substring("Bearer ".Length).Trim();
+
+                // Decode JWT token to get JTI
+                var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                var jwtToken = handler.ReadJwtToken(token);
+                var jti = jwtToken.Claims.FirstOrDefault(c => c.Type == System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Jti)?.Value;
+
+                if (string.IsNullOrEmpty(jti))
                 {
-                    return CResponseUnauthorized("Invalid username or password");
+                    return CResponseUnauthorized("Invalid token");
                 }
 
-                // Find and deactivate active session
-                var activeSession = await _context.Sessions
-                    .FirstOrDefaultAsync(s => s.UserId == user.Id && s.IsActive);
+                // Find and deactivate session by JTI
+                var session = await _context.Sessions
+                    .FirstOrDefaultAsync(s => s.TokenJti == jti && s.IsActive);
 
-                if (activeSession != null)
+                if (session == null)
                 {
-                    activeSession.IsActive = false;
-                    activeSession.LoggedOutAt = DateTime.UtcNow;
-                    activeSession.LogoutReason = "Manual";
-                    await _context.SaveChangesAsync();
-
-                    await _auditService.LogAsync("USER_LOGOUT", "User", user.Id, userId: user.Id);
+                    return CResponseUnauthorized("Session not found or already logged out");
                 }
+
+                // Deactivate session
+                session.IsActive = false;
+                session.LoggedOutAt = DateTime.UtcNow;
+                session.LogoutReason = "Manual";
+                await _context.SaveChangesAsync();
+
+                // Log audit
+                await _auditService.LogAsync("USER_LOGOUT", "User", session.UserId, userId: session.UserId);
 
                 var response = new ApiResponse<string>
                 {

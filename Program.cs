@@ -51,6 +51,37 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+// Configure Rate Limiting
+builder.Services.AddMemoryCache();
+builder.Services.Configure<AspNetCoreRateLimit.IpRateLimitOptions>(options =>
+{
+    options.EnableEndpointRateLimiting = true;
+    options.StackBlockedRequests = false;
+    options.HttpStatusCode = 429;
+    options.RealIpHeader = "X-Real-IP";
+    options.ClientIdHeader = "X-ClientId";
+    options.GeneralRules = new List<AspNetCoreRateLimit.RateLimitRule>
+    {
+        new AspNetCoreRateLimit.RateLimitRule
+        {
+            Endpoint = "POST:/api/auth/login",
+            Period = "1m",
+            Limit = 5 // 5 login attempts per minute
+        },
+        new AspNetCoreRateLimit.RateLimitRule
+        {
+            Endpoint = "*",
+            Period = "1m",
+            Limit = 100 // 100 requests per minute for all other endpoints
+        }
+    };
+});
+
+builder.Services.AddSingleton<AspNetCoreRateLimit.IIpPolicyStore, AspNetCoreRateLimit.MemoryCacheIpPolicyStore>();
+builder.Services.AddSingleton<AspNetCoreRateLimit.IRateLimitCounterStore, AspNetCoreRateLimit.MemoryCacheRateLimitCounterStore>();
+builder.Services.AddSingleton<AspNetCoreRateLimit.IRateLimitConfiguration, AspNetCoreRateLimit.RateLimitConfiguration>();
+builder.Services.AddSingleton<AspNetCoreRateLimit.IProcessingStrategy, AspNetCoreRateLimit.AsyncKeyLockProcessingStrategy>();
+
 var app = builder.Build();
 
 // Add logging middleware
@@ -76,6 +107,10 @@ app.UseSwaggerUI(options =>
 app.MapGet("/", () => "LMS API is running");
 
 app.UseHttpsRedirection();
+
+// Add IP Rate Limiting
+app.UseMiddleware<AspNetCoreRateLimit.IpRateLimitMiddleware>();
+
 app.UseAuthentication();
 app.UseMiddleware<LMS.Middleware.SessionValidationMiddleware>();
 app.UseAuthorization();
