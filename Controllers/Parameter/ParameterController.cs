@@ -5,11 +5,13 @@ using LMS.Data;
 using LMS.DTOs.Parameter;
 using LMS.Model.Common;
 using LMS.Models.Parameter;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace LMS.Controllers.Parameter
 {
+    [Authorize]
     [Route("api/parameter")]
     [ApiController]
     public class ParameterController : BaseApiController
@@ -62,6 +64,7 @@ namespace LMS.Controllers.Parameter
             }
         }
 
+        [Authorize(Roles = "ADM,SA")]
         [HttpPost("codeType")]
         public async Task<IActionResult> CreateCodeType([FromBody] CodeTypeCreateDto body)
         {
@@ -98,6 +101,7 @@ namespace LMS.Controllers.Parameter
             }
         }
 
+        [Authorize(Roles = "ADM,SA")]
         [HttpPut("codeType/{id}")]
         public async Task<IActionResult> UpdateCodeType(int id, [FromBody] CodeTypeUpdateDto body)
         {
@@ -139,6 +143,7 @@ namespace LMS.Controllers.Parameter
             }
         }
 
+        [Authorize(Roles = "ADM,SA")]
         [HttpDelete("codeType/{id}")]
         public async Task<IActionResult> DeleteCodeType(int id)
         {
@@ -190,6 +195,7 @@ namespace LMS.Controllers.Parameter
             }
         }
 
+        [Authorize(Roles = "ADM,SA")]
         [HttpPost("systemCode")]
         public async Task<IActionResult> CreateSystemCode([FromBody] SystemCodeCreateDto body)
         {
@@ -225,6 +231,7 @@ namespace LMS.Controllers.Parameter
             }
         }
 
+        [Authorize(Roles = "ADM,SA")]
         [HttpPut("systemCode/{id}")]
         public async Task<IActionResult> UpdateSystemCode(int id, [FromBody] SystemCodeUpdateDto body)
         {
@@ -282,6 +289,7 @@ namespace LMS.Controllers.Parameter
             }
         }
 
+        [Authorize(Roles = "ADM,SA")]
         [HttpDelete("systemCode/{id}")]
         public async Task<IActionResult> DeleteSystemCode(int id)
         {
