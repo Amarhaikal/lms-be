@@ -5,6 +5,7 @@ using LMS.Data;
 using LMS.DTOs.Auth;
 using LMS.DTOs.User;
 using LMS.Model.Common;
+using LMS.Models.Auth;
 using LMS.Models.User;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -20,15 +21,18 @@ namespace LMS.Controllers.Auth
         private readonly ILogger<AuthController> _logger;
         private readonly LMS.Services.Auth.JwtService _jwtService;
         private readonly LMS.Services.Auth.AuditService _auditService;
+        private readonly LMS.Services.Auth.PasswordPolicyService _passwordPolicyService;
 
         public AuthController(ApplicationDbContext context, IMapper mapper, ILogger<AuthController> logger,
-            LMS.Services.Auth.JwtService jwtService, LMS.Services.Auth.AuditService auditService)
+            LMS.Services.Auth.JwtService jwtService, LMS.Services.Auth.AuditService auditService,
+            LMS.Services.Auth.PasswordPolicyService passwordPolicyService)
         {
             _context = context;
             _mapper = mapper;
             _logger = logger;
             _jwtService = jwtService;
             _auditService = auditService;
+            _passwordPolicyService = passwordPolicyService;
         }
 
         [HttpPost("register")]
@@ -73,6 +77,26 @@ namespace LMS.Controllers.Auth
                     return BadRequest(response);
                 }
 
+                // Validate password policy
+                var passwordValidation = _passwordPolicyService.ValidatePassword(
+                    request.Password,
+                    request.Username
+                );
+
+                if (!passwordValidation.IsValid)
+                {
+                    return BadRequest(new ApiResponse<object>
+                    {
+                        Status = 400,
+                        Message = "Password does not meet requirements",
+                        Data = new
+                        {
+                            Errors = passwordValidation.Errors,
+                            Strength = _passwordPolicyService.CalculatePasswordStrength(request.Password)
+                        }
+                    });
+                }
+
                 var hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
                 var statusNewUser = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == "NEW");
 
@@ -83,11 +107,21 @@ namespace LMS.Controllers.Auth
                     Username = request.Username,
                     Email = request.Email,
                     Password = hashedPassword,
+                    PasswordChangedAt = DateTime.UtcNow,
                     RoleId = request.RoleId,
                     StatusId = statusNewUser?.Id ?? 0,
                     CreatedBy = null,
                     CreatedAt = DateTime.UtcNow,
                 };
+
+                // Save password history
+                var passwordHistory = new PasswordHistory
+                {
+                    UserId = newUser.Id,
+                    PasswordHash = hashedPassword,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.PasswordHistories.Add(passwordHistory);
 
                 _context.Users.Add(newUser);
                 await _context.SaveChangesAsync();

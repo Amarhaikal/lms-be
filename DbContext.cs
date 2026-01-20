@@ -29,6 +29,9 @@ namespace LMS.Data
         // Audit Logs
         public DbSet<Models.Audit.AuditLog> AuditLogs { get; set; }
 
+        // Auth
+        public DbSet<Models.Auth.PasswordHistory> PasswordHistories { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
