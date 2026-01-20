@@ -28,6 +28,9 @@ builder.Services.AddScoped<LMS.Services.Auth.JwtService>();
 builder.Services.AddScoped<LMS.Services.Auth.AuditService>();
 builder.Services.AddHttpContextAccessor();
 
+// Add Password Policy Service
+builder.Services.AddScoped<LMS.Services.Auth.PasswordPolicyService>();
+
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 builder.Services.AddAuthentication(options =>
