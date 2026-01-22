@@ -51,7 +51,7 @@ builder.Services.AddOpenApi(options =>
 // Add database context
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+    options.UseMySql(connectionString, ServerVersion.Parse("5.7.0-mysql")));
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
