@@ -99,8 +99,10 @@ pipeline {
                         # Copy script to deployment directory
                         cp ${WORKSPACE}/migration.sql /var/www/lms/lms-be/
                         
-                        # Apply migrations to MySQL container
-                        docker exec -i lms-mysql mysql -ulms_user -plms_password lms_db < /var/www/lms/lms-be/migration.sql
+                        # Apply migrations to MySQL container using credentials from .env
+                        cd /var/www/lms/lms-be
+                        source .env
+                        docker exec -i lms-mysql mysql -u\${MYSQL_USER} -p\${MYSQL_PASSWORD} \${MYSQL_DATABASE} < migration.sql
                         
                         echo 'Database migrations completed!'
                     """
