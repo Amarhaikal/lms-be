@@ -147,7 +147,10 @@ app.UseSwaggerUI(options =>
 // display "LMS API is running" when route to /
 app.MapGet("/", () => "LMS API is running");
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    // app.UseHttpsRedirection(); 
+}
 
 // Add IP Rate Limiting
 app.UseMiddleware<AspNetCoreRateLimit.IpRateLimitMiddleware>();
