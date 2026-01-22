@@ -89,13 +89,15 @@ pipeline {
                 script {
                     echo 'Running database migrations...'
                     sh """
-                        cd ${WORKSPACE}
-                        
-                        # Generate SQL migration script
-                        dotnet ef migrations script --idempotent -o migration.sql
+                        # Use the build Docker image (which has .NET SDK) to generate migration script
+                        docker run --rm \
+                            -v ${WORKSPACE}:/src \
+                            -w /src \
+                            mcr.microsoft.com/dotnet/sdk:9.0 \
+                            dotnet ef migrations script --idempotent -o migration.sql
                         
                         # Copy script to deployment directory
-                        cp migration.sql /var/www/lms/lms-be/
+                        cp ${WORKSPACE}/migration.sql /var/www/lms/lms-be/
                         
                         # Apply migrations to MySQL container
                         docker exec -i lms-mysql mysql -ulms_user -plms_password lms_db < /var/www/lms/lms-be/migration.sql
