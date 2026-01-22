@@ -84,6 +84,28 @@ pipeline {
             }
         }
         
+        stage('Run Database Migrations') {
+            steps {
+                script {
+                    echo 'Running database migrations...'
+                    sh """
+                        cd ${WORKSPACE}
+                        
+                        # Generate SQL migration script
+                        dotnet ef migrations script --idempotent -o migration.sql
+                        
+                        # Copy script to deployment directory
+                        cp migration.sql /var/www/lms/lms-be/
+                        
+                        # Apply migrations to MySQL container
+                        docker exec -i lms-mysql mysql -ulms_user -plms_password lms_db < /var/www/lms/lms-be/migration.sql
+                        
+                        echo 'Database migrations completed!'
+                    """
+                }
+            }
+        }
+        
         stage('Health Check') {
             steps {
                 script {
