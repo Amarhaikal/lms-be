@@ -441,6 +441,8 @@ File: `Services/EmailService.cs`
 ```csharp
 using MailKit.Net.Smtp;
 using MimeKit;
+using LMS.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace LMS.Services
 {
@@ -493,31 +495,83 @@ namespace LMS.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to send email to {Email}", toEmail);
-                throw;
+                // Don't throw - we don't want email failures to break the application
             }
         }
 
-        // Templates
+        // Email Templates
+
+        /// <summary>
+        /// Send account suspended notification to the user
+        /// </summary>
         public async Task SendAccountSuspendedEmailAsync(string toEmail, string username)
         {
             var subject = "Account Suspended - Security Alert";
             var body = $@"
                 <h2>Account Suspended</h2>
                 <p>Dear {username},</p>
-                <p>Your account has been suspended due to multiple failed login attempts.</p>
-                <p>Please contact your administrator to reactivate your account.</p>
+                <p>Your account has been suspended due to multiple failed login attempts (5 attempts).</p>
+                <p><strong>Please contact your administrator to reactivate your account.</strong></p>
                 <p><strong>Security Tips:</strong></p>
                 <ul>
                     <li>Never share your password with anyone</li>
                     <li>Use a strong, unique password</li>
-                    <li>Enable two-factor authentication</li>
+                    <li>Contact administrator if you need password assistance</li>
                 </ul>
-                <p>If this wasn't you, please contact support immediately.</p>
+                <p>If this wasn't you, please contact your administrator immediately.</p>
+                <hr>
+                <p style='color: #666; font-size: 12px;'>This is an automated message from LMS Banking System. Please do not reply to this email.</p>
             ";
             await SendAsync(toEmail, subject, body);
         }
 
-        public async Task SendNewLoginAlertAsync(string toEmail, string username, string ipAddress, string location)
+        /// <summary>
+        /// Send account suspended alert to all administrators
+        /// </summary>
+        public async Task SendAccountSuspendedAdminAlertAsync(
+            string adminEmail,
+            string adminName,
+            string suspendedUsername,
+            string suspendedUserEmail,
+            string ipAddress)
+        {
+            var subject = "⚠️ User Account Suspended - Admin Alert";
+            var body = $@"
+                <h2>Account Suspension Alert</h2>
+                <p>Dear {adminName},</p>
+                <p>A user account has been automatically suspended due to multiple failed login attempts.</p>
+
+                <h3>Suspended User Details:</h3>
+                <ul>
+                    <li><strong>Username:</strong> {suspendedUsername}</li>
+                    <li><strong>Email:</strong> {suspendedUserEmail}</li>
+                    <li><strong>Reason:</strong> 5 consecutive failed login attempts</li>
+                    <li><strong>IP Address:</strong> {ipAddress}</li>
+                    <li><strong>Time:</strong> {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss UTC}</li>
+                </ul>
+
+                <p><strong>Action Required:</strong></p>
+                <ul>
+                    <li>Verify the user's identity before reactivating the account</li>
+                    <li>Investigate if this is a potential security breach</li>
+                    <li>Consider resetting the user's password</li>
+                </ul>
+
+                <p>To reactivate the account, update the user's status to 'Active' in the admin panel.</p>
+                <hr>
+                <p style='color: #666; font-size: 12px;'>This is an automated security alert from LMS Banking System.</p>
+            ";
+            await SendAsync(adminEmail, subject, body);
+        }
+
+        /// <summary>
+        /// Send new login alert when user logs in from new IP/device
+        /// </summary>
+        public async Task SendNewLoginAlertAsync(
+            string toEmail,
+            string username,
+            string ipAddress,
+            string deviceType)
         {
             var subject = "New Login Detected";
             var body = $@"
@@ -526,23 +580,61 @@ namespace LMS.Services
                 <p>We detected a login to your account from a new location:</p>
                 <ul>
                     <li><strong>IP Address:</strong> {ipAddress}</li>
-                    <li><strong>Location:</strong> {location}</li>
+                    <li><strong>Device Type:</strong> {deviceType}</li>
                     <li><strong>Time:</strong> {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss UTC}</li>
                 </ul>
                 <p>If this was you, no action is needed.</p>
-                <p>If this wasn't you, please change your password immediately and contact support.</p>
+                <p><strong>If this wasn't you, please contact your administrator immediately.</strong></p>
+                <hr>
+                <p style='color: #666; font-size: 12px;'>This is an automated security alert from LMS Banking System.</p>
             ";
             await SendAsync(toEmail, subject, body);
         }
 
-        public async Task SendPasswordChangedEmailAsync(string toEmail, string username)
+        /// <summary>
+        /// Send notification when admin changes user's password
+        /// </summary>
+        public async Task SendPasswordChangedByAdminEmailAsync(
+            string toEmail,
+            string username,
+            string adminName)
         {
-            var subject = "Password Changed Successfully";
+            var subject = "Password Changed by Administrator";
             var body = $@"
                 <h2>Password Changed</h2>
                 <p>Dear {username},</p>
-                <p>Your password was successfully changed.</p>
-                <p>If you didn't make this change, please contact support immediately.</p>
+                <p>Your password was successfully changed by administrator: <strong>{adminName}</strong></p>
+                <p><strong>Time:</strong> {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss UTC}</p>
+                <p>If you didn't request this change, please contact your administrator immediately.</p>
+                <hr>
+                <p style='color: #666; font-size: 12px;'>This is an automated message from LMS Banking System.</p>
+            ";
+            await SendAsync(toEmail, subject, body);
+        }
+
+        /// <summary>
+        /// Send notification when admin changes user's role
+        /// </summary>
+        public async Task SendRoleChangedEmailAsync(
+            string toEmail,
+            string username,
+            string oldRole,
+            string newRole,
+            string adminName)
+        {
+            var subject = "Role Changed - Account Update";
+            var body = $@"
+                <h2>Role Changed</h2>
+                <p>Dear {username},</p>
+                <p>Your account role has been updated by administrator: <strong>{adminName}</strong></p>
+                <ul>
+                    <li><strong>Previous Role:</strong> {oldRole}</li>
+                    <li><strong>New Role:</strong> {newRole}</li>
+                    <li><strong>Time:</strong> {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss UTC}</li>
+                </ul>
+                <p>If you have questions about this change, please contact your administrator.</p>
+                <hr>
+                <p style='color: #666; font-size: 12px;'>This is an automated message from LMS Banking System.</p>
             ";
             await SendAsync(toEmail, subject, body);
         }
@@ -573,19 +665,67 @@ builder.Services.AddScoped<LMS.Services.EmailService>();
 
 **Step 5: Integrate in AuthController**
 
-```csharp
-// After account suspension
-await _emailService.SendAccountSuspendedEmailAsync(user.Email, user.Username);
+First, inject the EmailService in the constructor:
 
-// After successful login from new IP
-if (!knownIps.Contains(currentIp))
+```csharp
+private readonly LMS.Services.EmailService _emailService;
+
+public AuthController(ApplicationDbContext context, IMapper mapper, ILogger<AuthController> logger,
+    LMS.Services.Auth.JwtService jwtService, LMS.Services.Auth.AuditService auditService,
+    LMS.Services.Auth.PasswordPolicyService passwordPolicyService,
+    LMS.Services.EmailService emailService)  // Add this parameter
+{
+    _context = context;
+    _mapper = mapper;
+    _logger = logger;
+    _jwtService = jwtService;
+    _auditService = auditService;
+    _passwordPolicyService = passwordPolicyService;
+    _emailService = emailService;  // Add this line
+}
+```
+
+Then, add email notifications in the Login method:
+
+```csharp
+// After account suspension (around line 195)
+// 1. Send email to suspended user
+await _emailService.SendAccountSuspendedEmailAsync(user.Email, user.Fullname);
+
+// 2. Get all admin users (ADM + SA roles)
+var adminUsers = await _context.Users
+    .Include(u => u.Role)
+    .Where(u => u.Role != null && (u.Role.Code == "ADM" || u.Role.Code == "SA"))
+    .ToListAsync();
+
+// 3. Send alert to all admins
+foreach (var admin in adminUsers)
+{
+    await _emailService.SendAccountSuspendedAdminAlertAsync(
+        admin.Email,
+        admin.Fullname,
+        user.Username,
+        user.Email,
+        ipAddress ?? "Unknown"
+    );
+}
+
+// After successful login - detect new IP (around line 245)
+var knownIps = await _context.Sessions
+    .Where(s => s.UserId == user.Id && s.IpAddress != null)
+    .Select(s => s.IpAddress)
+    .Distinct()
+    .ToListAsync();
+
+if (!knownIps.Contains(ipAddress))
 {
     await _emailService.SendNewLoginAlertAsync(
         user.Email,
-        user.Username,
-        currentIp,
-        "Unknown Location"
+        user.Fullname,
+        ipAddress ?? "Unknown",
+        deviceType
     );
+}
 }
 ```
 

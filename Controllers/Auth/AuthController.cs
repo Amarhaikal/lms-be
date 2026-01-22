@@ -22,10 +22,11 @@ namespace LMS.Controllers.Auth
         private readonly LMS.Services.Auth.JwtService _jwtService;
         private readonly LMS.Services.Auth.AuditService _auditService;
         private readonly LMS.Services.Auth.PasswordPolicyService _passwordPolicyService;
+        private readonly LMS.Services.Auth.EmailService _emailService;
 
         public AuthController(ApplicationDbContext context, IMapper mapper, ILogger<AuthController> logger,
             LMS.Services.Auth.JwtService jwtService, LMS.Services.Auth.AuditService auditService,
-            LMS.Services.Auth.PasswordPolicyService passwordPolicyService)
+            LMS.Services.Auth.PasswordPolicyService passwordPolicyService, LMS.Services.Auth.EmailService emailService)
         {
             _context = context;
             _mapper = mapper;
@@ -33,6 +34,7 @@ namespace LMS.Controllers.Auth
             _jwtService = jwtService;
             _auditService = auditService;
             _passwordPolicyService = passwordPolicyService;
+            _emailService = emailService;
         }
 
         [HttpPost("register")]
@@ -152,10 +154,15 @@ namespace LMS.Controllers.Auth
                     return CResponseUnauthorized("Invalid username or password");
                 }
 
+                // Get device information from request (needed for email notifications)
+                var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+                var userAgent = HttpContext.Request.Headers["User-Agent"].ToString();
+                var deviceType = GetDeviceType(userAgent);
+
                 // Check if account is suspended
                 if (user.Status?.Code == "SUSPENDED")
                 {
-                    return CResponseUnauthorized("Account has been suspended due to multiple failed login attempts. Please contact administrator.");
+                    return CResponseUnauthorized("Account has been suspended. Please contact administrator.");
                 }
 
                 // Check if account is locked (temporary lock - kept for backward compatibility)
@@ -189,6 +196,26 @@ namespace LMS.Controllers.Auth
                                 oldValues: new { StatusId = oldStatusId, StatusCode = user.Status?.Code },
                                 newValues: new { StatusId = suspendedStatus.Id, StatusCode = "SUSPENDED" },
                                 userId: user.Id);
+
+                            await _emailService.SendAccountSuspendedEmailAsync(user.Email, user.Fullname);
+
+                            // 2. Get all admin users (ADM + SA roles)
+                            var adminUsers = await _context.Users
+                                .Include(u => u.Role)
+                                .Where(u => u.Role != null && (u.Role.Code == "ADM" || u.Role.Code == "SA"))
+                                .ToListAsync();
+
+                            // 3. Send alert to all admins
+                            foreach (var admin in adminUsers)
+                            {
+                                await _emailService.SendAccountSuspendedAdminAlertAsync(
+                                    admin.Email,
+                                    admin.Fullname,
+                                    user.Username,
+                                    user.Email,
+                                    ipAddress ?? "Unknown"
+                                );
+                            }
                         }
 
                         return CResponseUnauthorized("Account has been suspended due to multiple failed login attempts. Please contact administrator.");
@@ -221,10 +248,14 @@ namespace LMS.Controllers.Auth
                     user.Role?.Code
                 );
 
-                // Get device information from request
-                var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
-                var userAgent = HttpContext.Request.Headers["User-Agent"].ToString();
-                var deviceType = GetDeviceType(userAgent);
+                // Check for new IP BEFORE creating session
+                var knownIps = await _context.Sessions
+                    .Where(s => s.UserId == user.Id && s.IpAddress != null)
+                    .Select(s => s.IpAddress)
+                    .Distinct()
+                    .ToListAsync();
+
+                bool isNewIp = !knownIps.Contains(ipAddress);
 
                 // Create new session record
                 var newSession = new Models.Session.Session
@@ -246,6 +277,17 @@ namespace LMS.Controllers.Auth
 
                 // Log successful login
                 await _auditService.LogAsync("USER_LOGIN", "User", user.Id, userId: user.Id);
+
+                // Send email notification if new IP detected
+                if (isNewIp)
+                {
+                    await _emailService.SendNewLoginAlertAsync(
+                        user.Email,
+                        user.Fullname,
+                        ipAddress ?? "Unknown",
+                        deviceType
+                    );
+                }
 
                 // Map user to DTO
                 var userDto = _mapper.Map<UserDetailsDto>(user);
