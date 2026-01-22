@@ -47,6 +47,7 @@ pipeline {
                     """
                 }
             }
+        }
         
         stage('Sync Code to Deployment Directory') {
             steps {
