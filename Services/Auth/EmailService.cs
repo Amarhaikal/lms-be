@@ -73,7 +73,7 @@ namespace LMS.Services.Auth
                 </ul>
                 <p>If this wasn't you, please contact your administrator immediately.</p>
                 <hr>
-                <p style='color: #666; font-size: 12px;'>This is an automated message from LMS Banking System. Please do not reply to this email.</p>
+                <p style='color: #666; font-size: 12px;'>This is an automated message from Quantm Bank. Please do not reply to this email.</p>
             ";
             await SendAsync(toEmail, subject, body);
         }
@@ -109,7 +109,7 @@ namespace LMS.Services.Auth
 
                 <p>To reactivate the account, update the user's status to 'Active' in the admin panel.</p>
                 <hr>
-                <p style='color: #666; font-size: 12px;'>This is an automated security alert from LMS Banking System.</p>
+                <p style='color: #666; font-size: 12px;'>This is an automated security alert from Quantm Bank.</p>
             ";
             await SendAsync(adminEmail, subject, body);
         }
@@ -133,7 +133,7 @@ namespace LMS.Services.Auth
                 <p>If this was you, no action is needed.</p>
                 <p><strong>If this wasn't you, please contact your administrator immediately.</strong></p>
                 <hr>
-                <p style='color: #666; font-size: 12px;'>This is an automated security alert from LMS Banking System.</p>
+                <p style='color: #666; font-size: 12px;'>This is an automated security alert from Quantm Bank.</p>
             ";
             await SendAsync(toEmail, subject, body);
         }
@@ -151,7 +151,7 @@ namespace LMS.Services.Auth
                 <p><strong>Time:</strong> {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss UTC}</p>
                 <p>If you didn't request this change, please contact your administrator immediately.</p>
                 <hr>
-                <p style='color: #666; font-size: 12px;'>This is an automated message from LMS Banking System.</p>
+                <p style='color: #666; font-size: 12px;'>This is an automated message from Quantm Bank.</p>
             ";
             await SendAsync(toEmail, subject, body);
         }
@@ -175,7 +175,7 @@ namespace LMS.Services.Auth
                 </ul>
                 <p>If you have questions about this change, please contact your administrator.</p>
                 <hr>
-                <p style='color: #666; font-size: 12px;'>This is an automated message from LMS Banking System.</p>
+                <p style='color: #666; font-size: 12px;'>This is an automated message from Quantm Bank.</p>
             ";
             await SendAsync(toEmail, subject, body);
         }
