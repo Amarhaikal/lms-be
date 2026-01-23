@@ -127,7 +127,18 @@ namespace LMS.Controllers.Auth
                 _context.Users.Add(newUser);
                 await _context.SaveChangesAsync();
 
-                await _emailService.SendRegisterSuccessEmailAsync(request.Email, request.Username);
+                // Send email in background (fire-and-forget)
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await _emailService.SendRegisterSuccessEmailAsync(request.Email, request.Username);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to send registration email to {Email}", request.Email);
+                    }
+                });
 
                 return CResponseRegisterSuccessful();
 
@@ -198,25 +209,41 @@ namespace LMS.Controllers.Auth
                                 newValues: new { StatusId = suspendedStatus.Id, StatusCode = "SUSPENDED" },
                                 userId: user.Id);
 
-                            await _emailService.SendAccountSuspendedEmailAsync(user.Email, user.Fullname);
+                            // Send suspension emails in background
+                            var userEmail = user.Email;
+                            var userFullname = user.Fullname;
+                            var userName = user.Username;
+                            var userIp = ipAddress ?? "Unknown";
 
-                            // 2. Get all admin users (ADM + SA roles)
-                            var adminUsers = await _context.Users
-                                .Include(u => u.Role)
-                                .Where(u => u.Role != null && (u.Role.Code == "ADM" || u.Role.Code == "SA"))
-                                .ToListAsync();
-
-                            // 3. Send alert to all admins
-                            foreach (var admin in adminUsers)
+                            _ = Task.Run(async () =>
                             {
-                                await _emailService.SendAccountSuspendedAdminAlertAsync(
-                                    admin.Email,
-                                    admin.Fullname,
-                                    user.Username,
-                                    user.Email,
-                                    ipAddress ?? "Unknown"
-                                );
-                            }
+                                try
+                                {
+                                    await _emailService.SendAccountSuspendedEmailAsync(userEmail, userFullname);
+
+                                    // Get all admin users (ADM + SA roles)
+                                    var adminUsers = await _context.Users
+                                        .Include(u => u.Role)
+                                        .Where(u => u.Role != null && (u.Role.Code == "ADM" || u.Role.Code == "SA"))
+                                        .ToListAsync();
+
+                                    // Send alert to all admins
+                                    foreach (var admin in adminUsers)
+                                    {
+                                        await _emailService.SendAccountSuspendedAdminAlertAsync(
+                                            admin.Email,
+                                            admin.Fullname,
+                                            userName,
+                                            userEmail,
+                                            userIp
+                                        );
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogError(ex, "Failed to send account suspension emails for {Email}", userEmail);
+                                }
+                            });
                         }
 
                         return CResponseUnauthorized("Account has been suspended due to multiple failed login attempts. Please contact administrator.");
@@ -279,15 +306,25 @@ namespace LMS.Controllers.Auth
                 // Log successful login
                 await _auditService.LogAsync("USER_LOGIN", "User", user.Id, userId: user.Id);
 
-                // Send email notification if new IP detected
+                // Send email notification if new IP detected (in background)
                 if (isNewIp)
                 {
-                    await _emailService.SendNewLoginAlertAsync(
-                        user.Email,
-                        user.Fullname,
-                        ipAddress ?? "Unknown",
-                        deviceType
-                    );
+                    var userEmail = user.Email;
+                    var userFullname = user.Fullname;
+                    var userIp = ipAddress ?? "Unknown";
+                    var userDevice = deviceType;
+
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await _emailService.SendNewLoginAlertAsync(userEmail, userFullname, userIp, userDevice);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failed to send new login alert to {Email}", userEmail);
+                        }
+                    });
                 }
 
                 // Map user to DTO
