@@ -49,28 +49,28 @@ pipeline {
             }
         }
         
-        // stage('Sync Code to Deployment Directory') {
-        //     steps {
-        //         script {
-        //             echo 'Syncing code from workspace to deployment directory...'
-        //             sh """
-        //                 # Create deployment directory if it doesn't exist
-        //                 mkdir -p /var/www/lms/lms-be
+        stage('Sync Code to Deployment Directory') {
+            steps {
+                script {
+                    echo 'Syncing code from workspace to deployment directory...'
+                    sh """
+                        # Create deployment directory if it doesn't exist
+                        mkdir -p /var/www/lms/lms-be
                         
-        //                 # Sync all files except .git, bin, obj, logs, and .env
-        //                 rsync -av --delete \
-        //                     --exclude='.git' \
-        //                     --exclude='bin' \
-        //                     --exclude='obj' \
-        //                     --exclude='logs' \
-        //                     --exclude='.env' \
-        //                     ${WORKSPACE}/ /var/www/lms/lms-be/
+                        # Sync all files except .git, bin, obj, logs, and .env
+                        rsync -av --delete \
+                            --exclude='.git' \
+                            --exclude='bin' \
+                            --exclude='obj' \
+                            --exclude='logs' \
+                            --exclude='.env' \
+                            ${WORKSPACE}/ /var/www/lms/lms-be/
                         
-        //                 echo 'Code sync completed!'
-        //             """
-        //         }
-        //     }
-        // }
+                        echo 'Code sync completed!'
+                    """
+                }
+            }
+        }
         
         stage('Deploy') {
             steps {
