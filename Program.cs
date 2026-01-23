@@ -5,6 +5,17 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -155,6 +166,7 @@ if (!app.Environment.IsDevelopment())
 // Add IP Rate Limiting
 app.UseMiddleware<AspNetCoreRateLimit.IpRateLimitMiddleware>();
 
+app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseMiddleware<LMS.Middleware.SessionValidationMiddleware>();
 app.UseAuthorization();
