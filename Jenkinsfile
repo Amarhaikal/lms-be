@@ -101,7 +101,7 @@ pipeline {
                         
                         # Apply migrations to MySQL container using credentials from .env
                         cd /var/www/lms/lms-be
-                        source .env
+                        export \$(grep -v '^#' .env | xargs)
                         docker exec -i lms-mysql mysql -u\${MYSQL_USER} -p\${MYSQL_PASSWORD} \${MYSQL_DATABASE} < migration.sql
                         
                         echo 'Database migrations completed!'
