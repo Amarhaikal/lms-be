@@ -114,16 +114,15 @@ namespace LMS.Controllers.Auth
                     StatusId = statusNewUser?.Id ?? 0,
                     CreatedBy = null,
                     CreatedAt = DateTime.UtcNow,
+                    PasswordHistories = new List<PasswordHistory>
+                    {
+                        new PasswordHistory
+                        {
+                            PasswordHash = hashedPassword,
+                            CreatedAt = DateTime.UtcNow
+                        }
+                    }
                 };
-
-                // Save password history
-                var passwordHistory = new PasswordHistory
-                {
-                    UserId = newUser.Id,
-                    PasswordHash = hashedPassword,
-                    CreatedAt = DateTime.UtcNow
-                };
-                _context.PasswordHistories.Add(passwordHistory);
 
                 _context.Users.Add(newUser);
                 await _context.SaveChangesAsync();
