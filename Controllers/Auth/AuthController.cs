@@ -127,6 +127,8 @@ namespace LMS.Controllers.Auth
                 _context.Users.Add(newUser);
                 await _context.SaveChangesAsync();
 
+                await _emailService.SendRegisterSuccessEmailAsync(request.Email, request.Username);
+
                 return CResponseRegisterSuccessful();
 
             }

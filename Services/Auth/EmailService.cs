@@ -114,6 +114,21 @@ namespace LMS.Services.Auth
             await SendAsync(adminEmail, subject, body);
         }
 
+        public async Task SendRegisterSuccessEmailAsync(string toEmail, string username)
+        {
+            var subject = "Account Created - Quantm Bank";
+            var body = $@"
+                <h2>Welcome to Quantm Bank</h2>
+                <p>Dear {username},</p>
+                <p>An administrator has created an account for you at Quantm Bank.</p>
+                <p>You can now log in to the system using the credentials provided to you.</p>
+                <p>For security reasons, we recommend changing your password after your first login.</p>
+                <hr>
+                <p style='color: #666; font-size: 12px;'>This is an automated message from Quantm Bank. Please do not reply to this email.</p>
+            ";
+            await SendAsync(toEmail, subject, body);
+        }
+
         public async Task SendNewLoginAlertAsync(
             string toEmail,
             string username,
