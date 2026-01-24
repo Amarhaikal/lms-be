@@ -45,12 +45,41 @@ This document provides comprehensive security recommendations and implementation
 
 ### 🟡 Medium Priority
 
-| Priority | Feature                 | Impact   | Effort | Status     |
-| -------- | ----------------------- | -------- | ------ | ---------- |
-| 6        | Data Encryption at Rest | ⭐⭐⭐⭐ | 4-6h   | 📋 Planned |
-| 7        | Refresh Tokens          | ⭐⭐⭐   | 4-5h   | 📋 Planned |
-| 8        | IP Whitelisting         | ⭐⭐⭐   | 2-3h   | 📋 Planned |
-| 9        | Device Fingerprinting   | ⭐⭐⭐   | 4-5h   | 📋 Planned |
+| Priority | Feature                 | Impact         | Effort                                        | Status     |
+| -------- | ----------------------- | -------------- | --------------------------------------------- | ---------- |
+| 6        | Data Encryption at Rest | ✅ Implemented | Encrypted PII (IdNo) with AES-256 in database |
+| 7        | Refresh Tokens          | ⭐⭐⭐         | 4-5h                                          | 📋 Planned |
+
+...
+
+### 8. Data Encryption at Rest ✅
+
+**Location**: `Services/Security/EncryptionService.cs`, `Models/User/User.cs`
+
+**What it does**:
+
+- Encrypts sensitive data (`IdNo`) using AES-256 before saving to database.
+- Hashes `IdNo` using SHA-256 for fast searching/lookup.
+- Decrypts data automatically when sending to frontend.
+
+**Database Columns**:
+
+- `id_no` (varchar 255): Contains the encrypted ciphertext (e.g. `U2F...`).
+- `id_no_hash` (varchar 64): Contains the SHA-256 hash (e.g. `a5b9...`).
+
+**Usage**:
+
+```csharp
+// Encrypt during Register
+user.IdNo = _encryptionService.Encrypt(request.IdNo);
+user.IdNoHash = _encryptionService.Hash(request.IdNo);
+
+// Decrypt during Login/Get
+var plainText = _encryptionService.Decrypt(user.IdNo);
+```
+
+| 8 | IP Whitelisting | ⭐⭐⭐ | 2-3h | 📋 Planned |
+| 9 | Device Fingerprinting | ⭐⭐⭐ | 4-5h | 📋 Planned |
 
 ### 🟢 Nice to Have
 

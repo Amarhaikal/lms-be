@@ -23,10 +23,12 @@ namespace LMS.Controllers.Auth
         private readonly LMS.Services.Auth.AuditService _auditService;
         private readonly LMS.Services.Auth.PasswordPolicyService _passwordPolicyService;
         private readonly LMS.Services.Auth.EmailService _emailService;
+        private readonly LMS.Services.Auth.EncryptionService _encryptionService;
 
         public AuthController(ApplicationDbContext context, IMapper mapper, ILogger<AuthController> logger,
             LMS.Services.Auth.JwtService jwtService, LMS.Services.Auth.AuditService auditService,
-            LMS.Services.Auth.PasswordPolicyService passwordPolicyService, LMS.Services.Auth.EmailService emailService)
+            LMS.Services.Auth.PasswordPolicyService passwordPolicyService, LMS.Services.Auth.EmailService emailService,
+            LMS.Services.Auth.EncryptionService encryptionService)
         {
             _context = context;
             _mapper = mapper;
@@ -35,6 +37,7 @@ namespace LMS.Controllers.Auth
             _auditService = auditService;
             _passwordPolicyService = passwordPolicyService;
             _emailService = emailService;
+            _encryptionService = encryptionService;
         }
 
         [HttpPost("register")]
@@ -44,7 +47,8 @@ namespace LMS.Controllers.Auth
             {
                 var existingUserName = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
                 var existingUserEmail = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-                var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.IdNo == request.IdNo);
+                var idNoHash = _encryptionService.Hash(request.IdNo);
+                var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.IdNoHash == idNoHash);
 
                 if (existingUserName != null)
                 {
@@ -105,7 +109,8 @@ namespace LMS.Controllers.Auth
                 var newUser = new User
                 {
                     Fullname = request.Fullname,
-                    IdNo = request.IdNo,
+                    IdNo = _encryptionService.Encrypt(request.IdNo), // Encrypt for storage
+                    IdNoHash = _encryptionService.Hash(request.IdNo), // Hash for searching
                     Username = request.Username,
                     Email = request.Email,
                     Password = hashedPassword,
@@ -329,6 +334,7 @@ namespace LMS.Controllers.Auth
 
                 // Map user to DTO
                 var userDto = _mapper.Map<UserDetailsDto>(user);
+                userDto.IdNo = _encryptionService.Decrypt(userDto.IdNo);
 
                 return CResponseLoginSuccessful(token, userDto);
             }
