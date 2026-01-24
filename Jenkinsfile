@@ -93,8 +93,9 @@ pipeline {
                         docker run --rm \
                             -v ${WORKSPACE}:/src \
                             -w /src \
+                            -e "ConnectionStrings__DefaultConnection=Server=dummy;Database=dummy;User=dummy;Password=dummy;" \
                             mcr.microsoft.com/dotnet/sdk:9.0 \
-                            bash -c "export ConnectionStrings__DefaultConnection=\"Server=dummy;Database=dummy;User=dummy;Password=dummy;\" && dotnet restore && dotnet tool install --global dotnet-ef && export PATH=\"\$PATH:/root/.dotnet/tools\" && dotnet ef migrations script --idempotent -o migration.sql"
+                            bash -c "dotnet restore && dotnet tool install --global dotnet-ef && export PATH=\"\$PATH:/root/.dotnet/tools\" && dotnet ef migrations script --idempotent -o migration.sql"
                         
                         # Copy script to deployment directory
                         cp ${WORKSPACE}/migration.sql /var/www/quantm/quantm-be/
