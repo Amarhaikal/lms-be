@@ -1,11 +1,75 @@
-# Docker Setup Guide for LMS Backend
+# Docker Quick Cheat Sheet & Setup Guide 🐳
 
-Complete guide for containerizing and running the LMS backend using Docker.
+Here are the most common commands you will need for your daily work.
 
-## 📋 Prerequisites
+## ⚡️ Daily Commands (Cheat Sheet)
 
-- Docker installed (version 20.10+)
-- Docker Compose installed (version 2.0+)
+### 1. View Status (Is it running?)
+
+```bash
+# Check running containers
+docker compose ps
+
+# Check ALL containers (including stopped/crashed)
+docker compose ps -a
+```
+
+### 2. View Logs (What's happening?)
+
+```bash
+# Stream logs for ALL services
+docker compose logs -f
+
+# Stream logs for Backend only
+docker compose logs -f lms-backend
+
+# Stream logs for Database only
+docker compose logs -f mysql
+```
+
+### 3. Start & Stop
+
+```bash
+# Start everything (in background)
+docker compose up -d
+
+# Stop everything (keeps data safe)
+docker compose down
+```
+
+### 4. Updates & Rebuilds
+
+```bash
+# Rebuild containers (if you changed Dockerfile or want fresh build)
+docker compose up -d --build
+
+# Restart specific service (quick reboot)
+docker compose restart lms-backend
+```
+
+### 5. Nuclear Option (Reset Everything) ⚠️
+
+```bash
+# Stop and DELETE database volume (Data will be lost!)
+docker compose down -v
+
+# Start fresh
+docker compose up -d
+```
+
+---
+
+## 🎯 Dev vs Production Reference
+
+| Action           | Local Development (Mac)                        | Production (Server)         |
+| :--------------- | :--------------------------------------------- | :-------------------------- |
+| **Command**      | `docker compose -f docker-compose.dev.yml ...` | `docker compose ...`        |
+| **Backend Port** | `5001`                                         | `5000`                      |
+| **DB Port**      | `3307`                                         | `3306`                      |
+| **Database**     | `lms_db` (Local)                               | `lms` (Remote)              |
+| **Hot Reload**   | ✅ Yes (Auto-restart on save)                  | ❌ No (Optimized for speed) |
+
+---
 
 ## 🏗️ Project Structure
 
@@ -20,27 +84,9 @@ lms-be/
 └── DOCKER_GUIDE.md        # This file
 ```
 
-## 🎯 Understanding Dev vs Production
-
-### **Development (Your Mac)**
-
-- **File:** `docker-compose.dev.yml`
-- **Port:** `5001` (backend), `3307` (MySQL)
-- **Database:** Local MySQL in Docker (isolated, safe to experiment)
-- **Hot Reload:** ✅ Code changes auto-restart
-- **Use Case:** Daily coding, testing migrations, learning
-
-### **Production (Server)**
-
-- **File:** `docker-compose.yml`
-- **Port:** `5000` (backend), `3306` (MySQL)
-- **Database:** Production MySQL (real data)
-- **Optimized:** ✅ Small image, fast startup
-- **Use Case:** Deployment, real users
-
 ---
 
-## 🚀 Quick Start
+## 🚀 Detailed Setup Guide
 
 ### Development Mode (Local Mac)
 
@@ -84,13 +130,14 @@ docker compose -f docker-compose.dev.yml down
 cd /var/www/lms/lms-be
 
 # Start
-docker-compose up -d
+docker compose up -d
 
-# Run migrations
-docker exec -it lms-backend dotnet ef database update
+# Run migrations (from your Mac or via connection string)
+export ConnectionStrings__DefaultConnection="Server=localhost;Port=3306;Database=lms;User=root;Password=your_password;"
+dotnet ef database update
 
 # Check logs
-docker-compose logs -f
+docker compose logs -f
 ```
 
 ---
@@ -211,13 +258,13 @@ Docker uses **volumes** to store database data permanently:
 
 - Docker manages volumes automatically
 - Data survives container restarts
-- Only deleted if you use `docker-compose down -v`
+- Only deleted if you use `docker compose down -v`
 
 **Fresh start (delete all data):**
 
 ```bash
-docker-compose -f docker-compose.dev.yml down -v  # ← -v deletes volumes!
-docker-compose -f docker-compose.dev.yml up -d    # Fresh database
+docker compose -f docker-compose.dev.yml down -v  # ← -v deletes volumes!
+docker compose -f docker-compose.dev.yml up -d    # Fresh database
 ```
 
 ---
@@ -283,49 +330,20 @@ docker exec lms-mysql-dev mysql -u lms_user -plms_password lms_db -e "SELECT * F
 **Recommended Tools:**
 
 1. **MySQL Workbench** (Free)
-
    - Download: https://dev.mysql.com/downloads/workbench/
    - Full-featured, official MySQL tool
 
 2. **TablePlus** (Mac)
-
    - Download: https://tableplus.com/
    - Beautiful, native Mac app
 
 3. **DBeaver** (Free, Cross-platform)
-
    - Download: https://dbeaver.io/
    - Powerful, supports many databases
 
 4. **VS Code Extension**
    - Install: "MySQL" by Jun Han
    - View database directly in VS Code
-
-### **Method 3: Web Interface (Adminer)**
-
-Add to `docker-compose.dev.yml`:
-
-```yaml
-services:
-  # ... existing services ...
-
-  adminer:
-    image: adminer
-    container_name: lms-adminer
-    restart: unless-stopped
-    ports:
-      - "8081:8080"
-    networks:
-      - lms-network-dev
-```
-
-Then access at: http://localhost:8081
-
-- **System:** MySQL
-- **Server:** mysql
-- **Username:** lms_user
-- **Password:** lms_password
-- **Database:** lms_db
 
 ---
 
@@ -372,42 +390,9 @@ docker exec -it lms-backend-dev dotnet ef database update
 **Production (Server):**
 
 ```bash
-# On server
-docker exec -it lms-backend dotnet ef database update
-```
-
----
-
-### **Complete Migration Workflow**
-
-```bash
-# 1. Make changes to your DbContext.cs or models
-
-# 2. Create migration (on your Mac)
-dotnet ef migrations add AddNewFeature
-
-# 3. Review the generated migration file in Migrations/ folder
-
-# 4. Apply migration (on your Mac)
+# From your Mac (connects to server DB)
+export ConnectionStrings__DefaultConnection="Server=your-server-ip;Port=3307;Database=lms_db;User=lms_user;Password=pass;"
 dotnet ef database update
-
-# 5. Verify in database
-docker exec lms-mysql-dev mysql -u lms_user -plms_password lms_db -e "SHOW TABLES;"
-```
-
----
-
-### **Other Migration Commands**
-
-```bash
-# View migration status (on your Mac)
-dotnet ef migrations list
-
-# Rollback to previous migration (on your Mac)
-dotnet ef database update PreviousMigrationName
-
-# Remove last migration (on your Mac, before applying it)
-dotnet ef migrations remove
 ```
 
 ---
@@ -418,32 +403,32 @@ dotnet ef migrations remove
 
 ```bash
 # Start containers
-docker-compose -f docker-compose.dev.yml up -d
+docker compose -f docker-compose.dev.yml up -d
 
 # Stop containers (keep data)
-docker-compose -f docker-compose.dev.yml down
+docker compose -f docker-compose.dev.yml down
 
 # Stop and delete data
-docker-compose -f docker-compose.dev.yml down -v
+docker compose -f docker-compose.dev.yml down -v
 
 # Restart containers
-docker-compose -f docker-compose.dev.yml restart
+docker compose -f docker-compose.dev.yml restart
 
 # Rebuild containers
-docker-compose -f docker-compose.dev.yml up -d --build
+docker compose -f docker-compose.dev.yml up -d --build
 ```
 
 ### **Logs & Debugging**
 
 ```bash
 # View all logs
-docker-compose -f docker-compose.dev.yml logs -f
+docker compose -f docker-compose.dev.yml logs -f
 
 # View specific service logs
-docker-compose -f docker-compose.dev.yml logs -f lms-backend
+docker compose -f docker-compose.dev.yml logs -f lms-backend
 
 # Check container status
-docker-compose -f docker-compose.dev.yml ps
+docker compose -f docker-compose.dev.yml ps
 
 # Execute commands in container
 docker exec -it lms-backend-dev bash
@@ -468,10 +453,10 @@ docker exec -i lms-mysql-dev mysql -u lms_user -plms_password lms_db < backup.sq
 ```bash
 # 1. Start Docker containers
 cd /Users/amarhaikal/Documents/coding/aspnet/lms-be
-docker-compose -f docker-compose.dev.yml up -d
+docker compose -f docker-compose.dev.yml up -d
 
 # 2. Wait for MySQL to be ready (~10 seconds)
-docker-compose -f docker-compose.dev.yml logs -f mysql
+docker compose -f docker-compose.dev.yml logs -f mysql
 
 # 3. Create database tables (run on your Mac)
 dotnet ef database update
@@ -487,7 +472,7 @@ open http://localhost:5001
 
 ```bash
 # Morning: Start containers
-docker-compose -f docker-compose.dev.yml up -d
+docker compose -f docker-compose.dev.yml up -d
 
 # Code in VS Code
 # Changes auto-reload! ✨
@@ -500,7 +485,7 @@ dotnet ef migrations add NewFeature
 dotnet ef database update
 
 # Evening: Stop containers (data kept!)
-docker-compose -f docker-compose.dev.yml down
+docker compose -f docker-compose.dev.yml down
 ```
 
 ### **Deploy to Server**
@@ -519,7 +504,7 @@ cd /var/www/lms/lms-be
 git pull
 
 # 4. Deploy
-docker-compose up -d --build
+docker compose up -d --build
 
 # 5. Run migrations
 docker exec -it lms-backend dotnet ef database update
@@ -538,8 +523,10 @@ curl http://localhost:5000
 # On server
 cd /var/www/lms/lms-be
 git pull
-docker-compose up -d --build
-docker exec -it lms-backend dotnet ef database update
+docker compose up -d --build
+# Run migrations (from host)
+export ConnectionStrings__DefaultConnection="Server=localhost;Database=lms;User=root;Password=pass;"
+dotnet ef database update
 ```
 
 ### **Option 2: Jenkins CI/CD**
@@ -600,21 +587,32 @@ environment:
 
 ```bash
 # Check logs
-docker-compose -f docker-compose.dev.yml logs
+docker compose -f docker-compose.dev.yml logs
 
 # Check specific service
-docker-compose -f docker-compose.dev.yml logs lms-backend
+docker compose -f docker-compose.dev.yml logs lms-backend
+```
+
+### **App crashes immediately / 500 Error**
+
+Common cause: Missing configuration keys in Production `appsettings.json` (e.g., EncryptionKey).
+
+```bash
+# Check server config
+cat appsettings.json
+
+# If keys are missing, add them manually or use environment variables in docker-compose.yml
 ```
 
 ### **Database connection failed**
 
 ```bash
 # Check if MySQL is healthy
-docker-compose -f docker-compose.dev.yml ps
+docker compose -f docker-compose.dev.yml ps
 
 # Should show "healthy" status
 # If not, wait longer or check logs
-docker-compose -f docker-compose.dev.yml logs mysql
+docker compose -f docker-compose.dev.yml logs mysql
 ```
 
 ### **Port already in use**
@@ -642,15 +640,15 @@ docker exec -it lms-backend-dev dotnet ef database update --verbose
 
 ```bash
 # Nuclear option: delete everything and start fresh
-docker-compose -f docker-compose.dev.yml down -v
+docker compose -f docker-compose.dev.yml down -v
 docker system prune -a -f
-docker-compose -f docker-compose.dev.yml up -d --build
+docker compose -f docker-compose.dev.yml up -d --build
 docker exec -it lms-backend-dev dotnet ef database update
 ```
 
 ---
 
-## � Understanding Docker Concepts
+## Understanding Docker Concepts
 
 ### **Dockerfile vs docker-compose.yml**
 
@@ -698,7 +696,7 @@ docker volume rm lms-be_mysql_data_dev
 ## 🎯 Next Steps
 
 - [x] Docker setup for backend
-- [ ] Add Adminer for easy database viewing
+- [x] Add Adminer for easy database viewing
 - [ ] Create frontend Dockerfile (when lms-fe is ready)
 - [ ] Configure Nginx reverse proxy
 - [ ] Set up SSL certificates
@@ -734,7 +732,6 @@ docker system prune -a  # Clean up everything
 **Export/Import images:**
 
 ```bash
-# Export
 docker save lms-backend:latest > lms-backend.tar
 
 # Import
@@ -745,7 +742,7 @@ docker load < lms-backend.tar
 
 ```bash
 # Alias for fresh start (add to ~/.zshrc)
-alias lms-reset='docker-compose -f docker-compose.dev.yml down -v && docker-compose -f docker-compose.dev.yml up -d && sleep 10 && docker exec -it lms-backend-dev dotnet ef database update'
+alias lms-reset='docker compose -f docker-compose.dev.yml down -v && docker compose -f docker-compose.dev.yml up -d && sleep 10 && docker exec -it lms-backend-dev dotnet ef database update'
 ```
 
 ---
