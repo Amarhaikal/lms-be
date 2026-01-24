@@ -1,7 +1,7 @@
-using LMS.Model.Common;
+using QUANTM.Model.Common;
 using Microsoft.AspNetCore.Mvc;
 
-namespace LMS.Controllers.Common
+namespace QUANTM.Controllers.Common
 {
     public class BaseApiController : ControllerBase
     {

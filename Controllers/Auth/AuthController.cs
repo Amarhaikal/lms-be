@@ -1,16 +1,16 @@
 using System.Text.Json;
 using AutoMapper;
-using LMS.Controllers.Common;
-using LMS.Data;
-using LMS.DTOs.Auth;
-using LMS.DTOs.User;
-using LMS.Model.Common;
-using LMS.Models.Auth;
-using LMS.Models.User;
+using QUANTM.Controllers.Common;
+using QUANTM.Data;
+using QUANTM.DTOs.Auth;
+using QUANTM.DTOs.User;
+using QUANTM.Model.Common;
+using QUANTM.Models.Auth;
+using QUANTM.Models.User;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace LMS.Controllers.Auth
+namespace QUANTM.Controllers.Auth
 {
     [Route("api/auth")]
     [ApiController]
@@ -19,16 +19,16 @@ namespace LMS.Controllers.Auth
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly ILogger<AuthController> _logger;
-        private readonly LMS.Services.Auth.JwtService _jwtService;
-        private readonly LMS.Services.Auth.AuditService _auditService;
-        private readonly LMS.Services.Auth.PasswordPolicyService _passwordPolicyService;
-        private readonly LMS.Services.Auth.EmailService _emailService;
-        private readonly LMS.Services.Auth.EncryptionService _encryptionService;
+        private readonly QUANTM.Services.Auth.JwtService _jwtService;
+        private readonly QUANTM.Services.Auth.AuditService _auditService;
+        private readonly QUANTM.Services.Auth.PasswordPolicyService _passwordPolicyService;
+        private readonly QUANTM.Services.Auth.EmailService _emailService;
+        private readonly QUANTM.Services.Auth.EncryptionService _encryptionService;
 
         public AuthController(ApplicationDbContext context, IMapper mapper, ILogger<AuthController> logger,
-            LMS.Services.Auth.JwtService jwtService, LMS.Services.Auth.AuditService auditService,
-            LMS.Services.Auth.PasswordPolicyService passwordPolicyService, LMS.Services.Auth.EmailService emailService,
-            LMS.Services.Auth.EncryptionService encryptionService)
+            QUANTM.Services.Auth.JwtService jwtService, QUANTM.Services.Auth.AuditService auditService,
+            QUANTM.Services.Auth.PasswordPolicyService passwordPolicyService, QUANTM.Services.Auth.EmailService emailService,
+            QUANTM.Services.Auth.EncryptionService encryptionService)
         {
             _context = context;
             _mapper = mapper;
@@ -424,7 +424,7 @@ namespace LMS.Controllers.Auth
                     .OrderByDescending(s => s.CreatedAt)
                     .ToListAsync();
 
-                var sessionDtos = _mapper.Map<List<LMS.DTOs.Session.SessionDto>>(activeSessions);
+                var sessionDtos = _mapper.Map<List<QUANTM.DTOs.Session.SessionDto>>(activeSessions);
 
                 return CResponseGetListSuccessful(sessionDtos);
             }

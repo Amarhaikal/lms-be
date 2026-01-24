@@ -1,11 +1,11 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text.Json;
-using LMS.Data;
-using LMS.Models.Audit;
+using QUANTM.Data;
+using QUANTM.Models.Audit;
 using Microsoft.EntityFrameworkCore;
 
-namespace LMS.Services.Auth
+namespace QUANTM.Services.Auth
 {
     public class AuditService
     {

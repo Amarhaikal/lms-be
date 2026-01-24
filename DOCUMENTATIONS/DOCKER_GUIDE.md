@@ -21,7 +21,7 @@ docker compose ps -a
 docker compose logs -f
 
 # Stream logs for Backend only
-docker compose logs -f lms-backend
+docker compose logs -f quantm-backend
 
 # Stream logs for Database only
 docker compose logs -f mysql
@@ -44,7 +44,7 @@ docker compose down
 docker compose up -d --build
 
 # Restart specific service (quick reboot)
-docker compose restart lms-backend
+docker compose restart quantm-backend
 ```
 
 ### 5. Nuclear Option (Reset Everything) ⚠️
@@ -66,7 +66,7 @@ docker compose up -d
 | **Command**      | `docker compose -f docker-compose.dev.yml ...` | `docker compose ...`        |
 | **Backend Port** | `5001`                                         | `5000`                      |
 | **DB Port**      | `3307`                                         | `3306`                      |
-| **Database**     | `lms_db` (Local)                               | `lms` (Remote)              |
+| **Database**     | `quantm_db` (Local)                            | `quantm` (Remote)           |
 | **Hot Reload**   | ✅ Yes (Auto-restart on save)                  | ❌ No (Optimized for speed) |
 
 ---
@@ -74,7 +74,7 @@ docker compose up -d
 ## 🏗️ Project Structure
 
 ```
-lms-be/
+quantm-be/
 ├── Dockerfile              # Production build (optimized, small)
 ├── Dockerfile.dev          # Development build (with hot reload)
 ├── docker-compose.yml      # Production setup (for server)
@@ -127,13 +127,13 @@ docker compose -f docker-compose.dev.yml down
 
 ```bash
 # On server
-cd /var/www/lms/lms-be
+cd /var/www/quantm/quantm-be
 
 # Start
 docker compose up -d
 
 # Run migrations (from your Mac or via connection string)
-export ConnectionStrings__DefaultConnection="Server=localhost;Port=3306;Database=lms;User=root;Password=your_password;"
+export ConnectionStrings__DefaultConnection="Server=localhost;Port=3306;Database=quantm_db;User=root;Password=your_password;"
 dotnet ef database update
 
 # Check logs
@@ -155,9 +155,9 @@ You can easily switch between local and staging databases using `.env` files.
 ```env
 DB_HOST=mysql
 DB_PORT=3306
-DB_NAME=lms_db
-DB_USER=lms_user
-DB_PASSWORD=lms_password
+DB_NAME=quantm_db
+DB_USER=quantm_user
+DB_PASSWORD=quantm_password
 ```
 
 2. Create `.env.staging` (for server database):
@@ -165,7 +165,7 @@ DB_PASSWORD=lms_password
 ```env
 DB_HOST=your-server-ip
 DB_PORT=3306
-DB_NAME=lms
+DB_NAME=quantm_db
 DB_USER=root
 DB_PASSWORD=your-server-password
 ```
@@ -218,7 +218,7 @@ Control CPU and memory usage for each container.
 docker stats
 
 # View specific container
-docker stats lms-backend-dev
+docker stats quantm-backend-dev
 ```
 
 ### **Adjust Limits:**
@@ -227,7 +227,7 @@ Edit `docker-compose.dev.yml` or `docker-compose.yml`:
 
 ```yaml
 services:
-  lms-backend:
+  quantm-backend:
     deploy:
       resources:
         limits:
@@ -279,9 +279,9 @@ docker compose -f docker-compose.dev.yml up -d    # Fresh database
 
 - **System:** MySQL
 - **Server:** mysql
-- **Username:** lms_user
-- **Password:** lms_password
-- **Database:** lms_db
+- **Username:** quantm_user
+- **Password:** quantm_password
+- **Database:** quantm_db
 
 **Features:**
 
@@ -299,7 +299,7 @@ docker compose -f docker-compose.dev.yml up -d    # Fresh database
 
 ```bash
 # Access MySQL CLI
-docker exec -i lms-mysql-dev mysql -u lms_user -plms_password lms_db
+docker exec -i quantm-mysql-dev mysql -u quantm_user -pquantm_password quantm_db
 
 # Inside MySQL:
 mysql> SHOW TABLES;
@@ -311,10 +311,10 @@ mysql> exit;
 
 ```bash
 # Show tables
-docker exec lms-mysql-dev mysql -u lms_user -plms_password lms_db -e "SHOW TABLES;"
+docker exec quantm-mysql-dev mysql -u quantm_user -pquantm_password quantm_db -e "SHOW TABLES;"
 
 # Query data
-docker exec lms-mysql-dev mysql -u lms_user -plms_password lms_db -e "SELECT * FROM Users;"
+docker exec quantm-mysql-dev mysql -u quantm_user -pquantm_password quantm_db -e "SELECT * FROM Users;"
 ```
 
 ### **Method 3: GUI Tools**
@@ -323,9 +323,9 @@ docker exec lms-mysql-dev mysql -u lms_user -plms_password lms_db -e "SELECT * F
 
 - **Host:** `localhost` or `127.0.0.1`
 - **Port:** `3307` (dev) or `3306` (prod)
-- **Username:** `lms_user`
-- **Password:** `lms_password`
-- **Database:** `lms_db`
+- **Username:** `quantm_user`
+- **Password:** `quantm_password`
+- **Database:** `quantm_db`
 
 **Recommended Tools:**
 
@@ -384,14 +384,14 @@ dotnet ef database update
 
 ```bash
 # Inside container (may require additional configuration)
-docker exec -it lms-backend-dev dotnet ef database update
+docker exec -it quantm-backend-dev dotnet ef database update
 ```
 
 **Production (Server):**
 
 ```bash
 # From your Mac (connects to server DB)
-export ConnectionStrings__DefaultConnection="Server=your-server-ip;Port=3307;Database=lms_db;User=lms_user;Password=pass;"
+export ConnectionStrings__DefaultConnection="Server=your-server-ip;Port=3307;Database=quantm_db;User=quantm_user;Password=pass;"
 dotnet ef database update
 ```
 
@@ -425,23 +425,23 @@ docker compose -f docker-compose.dev.yml up -d --build
 docker compose -f docker-compose.dev.yml logs -f
 
 # View specific service logs
-docker compose -f docker-compose.dev.yml logs -f lms-backend
+docker compose -f docker-compose.dev.yml logs -f quantm-backend
 
 # Check container status
 docker compose -f docker-compose.dev.yml ps
 
 # Execute commands in container
-docker exec -it lms-backend-dev bash
+docker exec -it quantm-backend-dev bash
 ```
 
 ### **Database Backup & Restore**
 
 ```bash
 # Backup database
-docker exec lms-mysql-dev mysqldump -u lms_user -plms_password lms_db > backup.sql
+docker exec quantm-mysql-dev mysqldump -u quantm_user -pquantm_password quantm_db > backup.sql
 
 # Restore database
-docker exec -i lms-mysql-dev mysql -u lms_user -plms_password lms_db < backup.sql
+docker exec -i quantm-mysql-dev mysql -u quantm_user -pquantm_password quantm_db < backup.sql
 ```
 
 ---
@@ -452,7 +452,7 @@ docker exec -i lms-mysql-dev mysql -u lms_user -plms_password lms_db < backup.sq
 
 ```bash
 # 1. Start Docker containers
-cd /Users/amarhaikal/Documents/coding/aspnet/lms-be
+cd /Users/amarhaikal/Documents/coding/aspnet/quantm-be
 docker compose -f docker-compose.dev.yml up -d
 
 # 2. Wait for MySQL to be ready (~10 seconds)
@@ -498,7 +498,7 @@ git push
 
 # 2. SSH to server
 ssh root@your-server
-cd /var/www/lms/lms-be
+cd /var/www/quantm/quantm-be
 
 # 3. Pull latest code
 git pull
@@ -507,7 +507,7 @@ git pull
 docker compose up -d --build
 
 # 5. Run migrations
-docker exec -it lms-backend dotnet ef database update
+docker exec -it quantm-backend dotnet ef database update
 
 # 6. Verify
 curl http://localhost:5000
@@ -521,11 +521,11 @@ curl http://localhost:5000
 
 ```bash
 # On server
-cd /var/www/lms/lms-be
+cd /var/www/quantm/quantm-be
 git pull
 docker compose up -d --build
 # Run migrations (from host)
-export ConnectionStrings__DefaultConnection="Server=localhost;Database=lms;User=root;Password=pass;"
+export ConnectionStrings__DefaultConnection="Server=localhost;Database=quantm_db;User=root;Password=pass;"
 dotnet ef database update
 ```
 
@@ -559,7 +559,7 @@ Edit `docker-compose.yml` and `docker-compose.dev.yml`:
 environment:
   MYSQL_ROOT_PASSWORD: your_secure_password_here
   MYSQL_PASSWORD: your_secure_password_here
-  ConnectionStrings__DefaultConnection: Server=mysql;Database=lms_db;User=lms_user;Password=your_secure_password_here;
+  ConnectionStrings__DefaultConnection: Server=mysql;Database=quantm_db;User=quantm_user;Password=your_secure_password_here;
 ```
 
 ### **Use Environment Files**
@@ -590,7 +590,7 @@ environment:
 docker compose -f docker-compose.dev.yml logs
 
 # Check specific service
-docker compose -f docker-compose.dev.yml logs lms-backend
+docker compose -f docker-compose.dev.yml logs quantm-backend
 ```
 
 ### **App crashes immediately / 500 Error**
@@ -630,10 +630,10 @@ ports:
 
 ```bash
 # Check if database is ready
-docker exec -it lms-mysql-dev mysql -u lms_user -plms_password -e "SHOW DATABASES;"
+docker exec -it quantm-mysql-dev mysql -u quantm_user -pquantm_password -e "SHOW DATABASES;"
 
 # Manually run migrations with verbose output
-docker exec -it lms-backend-dev dotnet ef database update --verbose
+docker exec -it quantm-backend-dev dotnet ef database update --verbose
 ```
 
 ### **Reset everything**
@@ -643,7 +643,7 @@ docker exec -it lms-backend-dev dotnet ef database update --verbose
 docker compose -f docker-compose.dev.yml down -v
 docker system prune -a -f
 docker compose -f docker-compose.dev.yml up -d --build
-docker exec -it lms-backend-dev dotnet ef database update
+docker exec -it quantm-backend-dev dotnet ef database update
 ```
 
 ---
@@ -685,10 +685,10 @@ docker ps -a
 docker volume ls
 
 # Inspect volume
-docker volume inspect lms-be_mysql_data_dev
+docker volume inspect quantm-be_mysql_data_dev
 
 # Delete specific volume
-docker volume rm lms-be_mysql_data_dev
+docker volume rm quantm-be_mysql_data_dev
 ```
 
 ---
@@ -697,7 +697,7 @@ docker volume rm lms-be_mysql_data_dev
 
 - [x] Docker setup for backend
 - [x] Add Adminer for easy database viewing
-- [ ] Create frontend Dockerfile (when lms-fe is ready)
+- [ ] Create frontend Dockerfile (when quantm-fe is ready)
 - [ ] Configure Nginx reverse proxy
 - [ ] Set up SSL certificates
 - [ ] Configure monitoring (Prometheus/Grafana)
@@ -732,17 +732,17 @@ docker system prune -a  # Clean up everything
 **Export/Import images:**
 
 ```bash
-docker save lms-backend:latest > lms-backend.tar
+docker save quantm-backend:latest > quantm-backend.tar
 
 # Import
-docker load < lms-backend.tar
+docker load < quantm-backend.tar
 ```
 
 **Quick database reset:**
 
 ```bash
 # Alias for fresh start (add to ~/.zshrc)
-alias lms-reset='docker compose -f docker-compose.dev.yml down -v && docker compose -f docker-compose.dev.yml up -d && sleep 10 && docker exec -it lms-backend-dev dotnet ef database update'
+alias quantm-reset='docker compose -f docker-compose.dev.yml down -v && docker compose -f docker-compose.dev.yml up -d && sleep 10 && docker exec -it quantm-backend-dev dotnet ef database update'
 ```
 
 ---

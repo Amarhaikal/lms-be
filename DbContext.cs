@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using LMS.Models.User;
-using LMS.Models.Parameter;
-using LMS.Models.Common;
+using QUANTM.Models.User;
+using QUANTM.Models.Parameter;
+using QUANTM.Models.Common;
 
-namespace LMS.Data
+namespace QUANTM.Data
 {
     public class ApplicationDbContext : DbContext
     {

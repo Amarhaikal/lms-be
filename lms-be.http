@@ -1,6 +1,0 @@
-@lms_be_HostAddress = http://localhost:5187
-
-GET {{lms_be_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

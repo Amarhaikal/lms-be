@@ -1,6 +1,6 @@
-# LMS Backend Documentation
+# QUANTM Backend Documentation
 
-Complete documentation for the Learning Management System Backend.
+Complete documentation for the Quantm Learning Management System Backend.
 
 ---
 
@@ -28,8 +28,8 @@ Complete documentation for the Learning Management System Backend.
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/Amarhaikal/lms-be.git
-cd lms-be
+git clone https://github.com/Amarhaikal/quantm-be.git
+cd quantm-be
 
 # 2. Create environment files
 cp .env.example .env.local
@@ -105,7 +105,7 @@ git commit -m "Your message"
 git push
 
 # Apply migration to server
-export ConnectionStrings__DefaultConnection="Server=SERVER_IP;Port=3307;Database=lms_db;User=lms_user;Password=PASSWORD;"
+export ConnectionStrings__DefaultConnection="Server=SERVER_IP;Port=3307;Database=quantm_db;User=quantm_user;Password=PASSWORD;"
 dotnet ef database update
 ```
 

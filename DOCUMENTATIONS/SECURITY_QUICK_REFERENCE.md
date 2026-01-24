@@ -2,7 +2,7 @@
 
 ## Current Security Status ✅
 
-Your LMS currently has:
+Your QUANTM currently has:
 
 - ✅ JWT Authentication (4-hour expiration)
 - ✅ BCrypt Password Hashing

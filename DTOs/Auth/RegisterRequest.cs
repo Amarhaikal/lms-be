@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace LMS.DTOs.Auth
+namespace QUANTM.DTOs.Auth
 {
     public class RegisterRequest
     {

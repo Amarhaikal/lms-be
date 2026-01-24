@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace LMS.Models.Audit
+namespace QUANTM.Models.Audit
 {
     [Table("audit_logs")]
     public class AuditLog

@@ -4,19 +4,19 @@ services:
   # MySQL Database
   mysql:
     image: mysql:8.0
-    container_name: lms-mysql-dev
+    container_name: quantm-mysql-dev
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_DATABASE: lms_db
-      MYSQL_USER: lms_user
-      MYSQL_PASSWORD: lms_password
+      MYSQL_DATABASE: quantm_db
+      MYSQL_USER: quantm_user
+      MYSQL_PASSWORD: quantm_password
     ports:
       - "3307:3306"
     volumes:
-      - mysql_data_dev:/var/lib/mysql
+      - quantm_mysql_data_dev:/var/lib/mysql
     networks:
-      - lms-network-dev
+      - quantm-network-dev
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 20s
@@ -31,11 +31,11 @@ services:
           memory: 512M
 
   # ASP.NET Core Backend (Development with hot reload)
-  lms-backend:
+  quantm-backend:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    container_name: lms-backend-dev
+    container_name: quantm-backend-dev
     restart: unless-stopped
     ports:
       - "5001:8080"
@@ -49,7 +49,7 @@ services:
       mysql:
         condition: service_healthy
     networks:
-      - lms-network-dev
+      - quantm-network-dev
     volumes:
       - .:/src
       - /src/bin
@@ -66,18 +66,18 @@ services:
   # Adminer - Web-based database viewer
   adminer:
     image: adminer
-    container_name: lms-adminer
+    container_name: quantm-adminer
     restart: unless-stopped
     ports:
       - "8081:8080"
     depends_on:
       - mysql
     networks:
-      - lms-network-dev
+      - quantm-network-dev
 
 networks:
-  lms-network-dev:
+  quantm-network-dev:
     driver: bridge
 
 volumes:
-  mysql_data_dev:
+  quantm_mysql_data_dev:

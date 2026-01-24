@@ -1,8 +1,8 @@
-# Security Implementation Guide for Banking LMS
+# Security Implementation Guide for Banking QUANTM
 
 ## Overview
 
-This document provides comprehensive security recommendations and implementation guidelines for a Loan Management System (LMS) used by bank officers. This system handles sensitive financial data and requires enterprise-grade security measures.
+This document provides comprehensive security recommendations and implementation guidelines for a Loan Management System (QUANTM) used by bank officers. This system handles sensitive financial data and requires enterprise-grade security measures.
 
 **Last Updated**: 2026-01-20  
 **Version**: 2.0
@@ -264,7 +264,7 @@ File: `Services/Auth/PasswordPolicyService.cs`
 ```csharp
 using System.Text.RegularExpressions;
 
-namespace LMS.Services.Auth
+namespace QUANTM.Services.Auth
 {
     public class PasswordPolicyService
     {
@@ -334,7 +334,7 @@ File: `Models/User/PasswordHistory.cs`
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace LMS.Models.User
+namespace QUANTM.Models.User
 {
     [Table("password_history")]
     public class PasswordHistory
@@ -433,7 +433,7 @@ dotnet ef database update
 File: `Program.cs`
 
 ```csharp
-builder.Services.AddScoped<LMS.Services.Auth.PasswordPolicyService>();
+builder.Services.AddScoped<QUANTM.Services.Auth.PasswordPolicyService>();
 ```
 
 ---
@@ -470,10 +470,10 @@ File: `Services/EmailService.cs`
 ```csharp
 using MailKit.Net.Smtp;
 using MimeKit;
-using LMS.Data;
+using QUANTM.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace LMS.Services
+namespace QUANTM.Services
 {
     public class EmailService
     {
@@ -549,7 +549,7 @@ namespace LMS.Services
                 </ul>
                 <p>If this wasn't you, please contact your administrator immediately.</p>
                 <hr>
-                <p style='color: #666; font-size: 12px;'>This is an automated message from LMS Banking System. Please do not reply to this email.</p>
+                <p style='color: #666; font-size: 12px;'>This is an automated message from QUANTM Banking System. Please do not reply to this email.</p>
             ";
             await SendAsync(toEmail, subject, body);
         }
@@ -588,7 +588,7 @@ namespace LMS.Services
 
                 <p>To reactivate the account, update the user's status to 'Active' in the admin panel.</p>
                 <hr>
-                <p style='color: #666; font-size: 12px;'>This is an automated security alert from LMS Banking System.</p>
+                <p style='color: #666; font-size: 12px;'>This is an automated security alert from QUANTM Banking System.</p>
             ";
             await SendAsync(adminEmail, subject, body);
         }
@@ -615,7 +615,7 @@ namespace LMS.Services
                 <p>If this was you, no action is needed.</p>
                 <p><strong>If this wasn't you, please contact your administrator immediately.</strong></p>
                 <hr>
-                <p style='color: #666; font-size: 12px;'>This is an automated security alert from LMS Banking System.</p>
+                <p style='color: #666; font-size: 12px;'>This is an automated security alert from QUANTM Banking System.</p>
             ";
             await SendAsync(toEmail, subject, body);
         }
@@ -636,7 +636,7 @@ namespace LMS.Services
                 <p><strong>Time:</strong> {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss UTC}</p>
                 <p>If you didn't request this change, please contact your administrator immediately.</p>
                 <hr>
-                <p style='color: #666; font-size: 12px;'>This is an automated message from LMS Banking System.</p>
+                <p style='color: #666; font-size: 12px;'>This is an automated message from QUANTM Banking System.</p>
             ";
             await SendAsync(toEmail, subject, body);
         }
@@ -663,7 +663,7 @@ namespace LMS.Services
                 </ul>
                 <p>If you have questions about this change, please contact your administrator.</p>
                 <hr>
-                <p style='color: #666; font-size: 12px;'>This is an automated message from LMS Banking System.</p>
+                <p style='color: #666; font-size: 12px;'>This is an automated message from QUANTM Banking System.</p>
             ";
             await SendAsync(toEmail, subject, body);
         }
@@ -678,7 +678,7 @@ namespace LMS.Services
   "Email": {
     "SmtpHost": "smtp.gmail.com",
     "SmtpPort": 587,
-    "FromName": "LMS Banking System",
+    "FromName": "QUANTM Banking System",
     "FromAddress": "noreply@yourbank.com",
     "Username": "your-email@gmail.com",
     "Password": "your-app-password"
@@ -689,7 +689,7 @@ namespace LMS.Services
 **Step 4: Register Service**
 
 ```csharp
-builder.Services.AddScoped<LMS.Services.EmailService>();
+builder.Services.AddScoped<QUANTM.Services.EmailService>();
 ```
 
 **Step 5: Integrate in AuthController**
@@ -697,12 +697,12 @@ builder.Services.AddScoped<LMS.Services.EmailService>();
 First, inject the EmailService in the constructor:
 
 ```csharp
-private readonly LMS.Services.EmailService _emailService;
+private readonly QUANTM.Services.EmailService _emailService;
 
 public AuthController(ApplicationDbContext context, IMapper mapper, ILogger<AuthController> logger,
-    LMS.Services.Auth.JwtService jwtService, LMS.Services.Auth.AuditService auditService,
-    LMS.Services.Auth.PasswordPolicyService passwordPolicyService,
-    LMS.Services.EmailService emailService)  // Add this parameter
+    QUANTM.Services.Auth.JwtService jwtService, QUANTM.Services.Auth.AuditService auditService,
+    QUANTM.Services.Auth.PasswordPolicyService passwordPolicyService,
+    QUANTM.Services.EmailService emailService)  // Add this parameter
 {
     _context = context;
     _mapper = mapper;
@@ -796,7 +796,7 @@ File: `Models/Auth/OtpVerification.cs`
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace LMS.Models.Auth
+namespace QUANTM.Models.Auth
 {
     [Table("otp_verifications")]
     public class OtpVerification
@@ -839,11 +839,11 @@ namespace LMS.Models.Auth
 File: `Services/Auth/OtpService.cs`
 
 ```csharp
-using LMS.Data;
-using LMS.Models.Auth;
+using QUANTM.Data;
+using QUANTM.Models.Auth;
 using Microsoft.EntityFrameworkCore;
 
-namespace LMS.Services.Auth
+namespace QUANTM.Services.Auth
 {
     public class OtpService
     {
@@ -991,7 +991,7 @@ builder.Services.AddCors(options =>
     {
         builder
             .WithOrigins(
-                "https://lms.yourbank.com",
+                "https://api.quantm.com",
                 "http://localhost:3000" // For development
             )
             .AllowAnyMethod()
@@ -1015,7 +1015,7 @@ app.UseCors("BankingPolicy");
 **File**: Create `Middleware/SecurityHeadersMiddleware.cs`
 
 ```csharp
-namespace LMS.Middleware
+namespace QUANTM.Middleware
 {
     public class SecurityHeadersMiddleware
     {
@@ -1067,7 +1067,7 @@ namespace LMS.Middleware
 **Register in Program.cs**:
 
 ```csharp
-app.UseMiddleware<LMS.Middleware.SecurityHeadersMiddleware>();
+app.UseMiddleware<QUANTM.Middleware.SecurityHeadersMiddleware>();
 ```
 
 ---
@@ -1170,7 +1170,7 @@ Recommended metrics to track:
 
 ## Conclusion
 
-Your LMS banking system now has a solid security foundation with:
+Your QUANTM banking system now has a solid security foundation with:
 
 - ✅ 12 security features fully implemented
 - 📋 5 high-priority features planned with detailed implementation guides

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace LMS.Migrations
+namespace QUANTM.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration

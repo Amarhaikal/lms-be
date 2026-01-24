@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
-using LMS.DTOs.User;
+using QUANTM.DTOs.User;
 
-namespace LMS.DTOs.Auth
+namespace QUANTM.DTOs.Auth
 {
     public class LoginResponseData
     {

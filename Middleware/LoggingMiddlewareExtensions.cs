@@ -1,4 +1,4 @@
-namespace LMS.Middleware
+namespace QUANTM.Middleware
 {
     public static class LoggingMiddlewareExtensions
     {

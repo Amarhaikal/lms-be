@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace LMS.Migrations
+namespace QUANTM.Migrations
 {
     /// <inheritdoc />
     public partial class RenameAddressTable : Migration

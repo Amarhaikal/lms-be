@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using LMS.Models.Auth;
-using LMS.Models.Common;
-using LMS.Models.Parameter;
+using QUANTM.Models.Auth;
+using QUANTM.Models.Common;
+using QUANTM.Models.Parameter;
 
-namespace LMS.Models.User;
+namespace QUANTM.Models.User;
 
 [Table("users")]
 public class User

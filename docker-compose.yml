@@ -4,7 +4,7 @@ services:
   # MySQL Database
   mysql:
     image: mysql:5.7
-    container_name: lms-mysql
+    container_name: quantm-mysql
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
@@ -14,9 +14,9 @@ services:
     ports:
       - "3307:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - quantm_mysql_data:/var/lib/mysql
     networks:
-      - lms-network
+      - quantm-network
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 20s
@@ -31,11 +31,11 @@ services:
           memory: 512M
 
   # ASP.NET Core Backend
-  lms-backend:
+  quantm-backend:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: lms-backend
+    container_name: quantm-backend
     restart: unless-stopped
     ports:
       - "5000:8080"
@@ -61,7 +61,7 @@ services:
       mysql:
         condition: service_healthy
     networks:
-      - lms-network
+      - quantm-network
     volumes:
       - ./logs:/app/logs
     deploy:
@@ -74,8 +74,8 @@ services:
           memory: 512M
 
 networks:
-  lms-network:
+  quantm-network:
     driver: bridge
 
 volumes:
-  mysql_data:
+  quantm_mysql_data:

@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
-namespace LMS.Services.Auth
+namespace QUANTM.Services.Auth
 {
     public class JwtService
     {

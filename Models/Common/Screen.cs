@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace LMS.Models.Common;
+namespace QUANTM.Models.Common;
 
 [Table("screens")]
 public class Screen

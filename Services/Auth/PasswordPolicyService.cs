@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 
-namespace LMS.Services.Auth
+namespace QUANTM.Services.Auth
 {
     public class PasswordPolicyService
     {

@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using LMS.Models.Parameter;
+using QUANTM.Models.Parameter;
 
-namespace LMS.Models.Common;
+namespace QUANTM.Models.Common;
 
 [Table("addresses")]
 public class Address

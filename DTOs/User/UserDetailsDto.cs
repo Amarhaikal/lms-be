@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
-using LMS.DTOs.Parameter;
+using QUANTM.DTOs.Parameter;
 
-namespace LMS.DTOs.User
+namespace QUANTM.DTOs.User
 {
     public class UserDetailsDto
     {

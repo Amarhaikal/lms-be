@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
-using LMS.Data;
+using QUANTM.Data;
 
-namespace LMS.Middleware
+namespace QUANTM.Middleware
 {
     public class SessionValidationMiddleware
     {

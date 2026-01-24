@@ -1,6 +1,6 @@
 # Database Migration Guide
 
-Complete guide for managing database migrations in the LMS Backend project.
+Complete guide for managing database migrations in the QUANTM Backend project.
 
 ---
 
@@ -75,7 +75,7 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 ### **Step 2: Create Migration**
 
 ```bash
-cd /Users/amarhaikal/Documents/coding/aspnet/lms-be
+cd /Users/amarhaikal/Documents/coding/aspnet/quantm-be
 
 # Create migration with descriptive name
 dotnet ef migrations add AddPhoneNumberToUser
@@ -129,9 +129,9 @@ open http://localhost:8081
 
 - System: MySQL
 - Server: mysql
-- Username: lms_user
-- Password: lms_password
-- Database: lms_db
+- Username: quantm_user
+- Password: quantm_password
+- Database: quantm_db
 
 ### **Step 5: Test Your Changes**
 
@@ -191,12 +191,12 @@ dotnet ef migrations list
 **Replace:**
 
 - `YOUR_SERVER_IP` - Your server's IP address (e.g., `103.123.45.67`)
-- `YOUR_SERVER_PASSWORD` - Password from `/var/www/lms/lms-be/.env` on server
+- `YOUR_SERVER_PASSWORD` - Password from `/var/www/quantm/quantm-be/.env` on server
 
 **Example:**
 
 ```bash
-export ConnectionStrings__DefaultConnection="Server=103.123.45.67;Port=3307;Database=lms_db;User=lms_user;Password=MySecurePass123;"
+export ConnectionStrings__DefaultConnection="Server=103.123.45.67;Port=3307;Database=quantm_db;User=quantm_user;Password=MySecurePass123;"
 dotnet ef database update
 ```
 
@@ -207,10 +207,10 @@ dotnet ef database update
 ssh root@your-server-ip
 
 # Check database
-docker exec lms-mysql mysql -u lms_user -plms_password lms_db -e "DESCRIBE Users;"
+docker exec quantm-mysql mysql -u quantm_user -pquantm_password quantm_db -e "DESCRIBE Users;"
 
 # Check application logs
-docker compose logs lms-backend
+docker compose logs quantm-backend
 ```
 
 ---
@@ -238,7 +238,7 @@ git commit -m "Add Course table"
 git push
 
 # 6. Apply to server
-export ConnectionStrings__DefaultConnection="Server=server-ip;Port=3307;Database=lms_db;User=lms_user;Password=pass;"
+export ConnectionStrings__DefaultConnection="Server=server-ip;Port=3307;Database=quantm_db;User=quantm_user;Password=pass;"
 dotnet ef database update
 ```
 
@@ -263,7 +263,7 @@ git commit -m "Add country seed data"
 git push
 
 # 6. Apply to server
-export ConnectionStrings__DefaultConnection="Server=server-ip;Port=3307;Database=lms_db;User=lms_user;Password=pass;"
+export ConnectionStrings__DefaultConnection="Server=server-ip;Port=3307;Database=quantm_db;User=quantm_user;Password=pass;"
 dotnet ef database update
 ```
 
@@ -371,7 +371,7 @@ docker compose -f docker-compose.dev.yml ps
 cat appsettings.Development.json
 
 # Should be:
-# "Server=localhost;Port=3307;Database=lms_db;User=lms_user;Password=lms_password;"
+# "Server=localhost;Port=3307;Database=quantm_db;User=quantm_user;Password=quantm_password;"
 ```
 
 ### **Error: "Access denied for user 'root'@'192.168.65.1'"**
@@ -384,7 +384,7 @@ cat appsettings.Development.json
 # For local development, update appsettings.Development.json:
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Port=3307;Database=lms_db;User=lms_user;Password=lms_password;"
+    "DefaultConnection": "Server=localhost;Port=3307;Database=quantm_db;User=quantm_user;Password=quantm_password;"
   }
 }
 ```
@@ -476,7 +476,7 @@ dotnet ef migrations add Changes
 ```bash
 # On server, backup database before migration
 ssh root@server
-docker exec lms-mysql mysqldump -u lms_user -plms_password lms_db > backup.sql
+docker exec quantm-mysql mysqldump -u quantm_user -pquantm_password quantm_db > backup.sql
 ```
 
 ### **5. Keep Migrations Small**
@@ -512,7 +512,7 @@ open http://localhost:8081
 
 ```bash
 # After git push and Jenkins deploy
-export ConnectionStrings__DefaultConnection="Server=SERVER_IP;Port=3307;Database=lms_db;User=lms_user;Password=PASSWORD;"
+export ConnectionStrings__DefaultConnection="Server=SERVER_IP;Port=3307;Database=quantm_db;User=quantm_user;Password=PASSWORD;"
 dotnet ef database update
 ```
 
@@ -555,7 +555,7 @@ git push
 # 7. Wait for Jenkins (~1-2 minutes)
 
 # 8. Apply to server
-export ConnectionStrings__DefaultConnection="Server=103.123.45.67;Port=3307;Database=lms_db;User=lms_user;Password=MyPass123;"
+export ConnectionStrings__DefaultConnection="Server=103.123.45.67;Port=3307;Database=quantm_db;User=quantm_user;Password=MyPass123;"
 dotnet ef database update
 
 # 9. Verify

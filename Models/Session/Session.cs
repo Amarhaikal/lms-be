@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using LMS.Models.User;
+using QUANTM.Models.User;
 
-namespace LMS.Models.Session
+namespace QUANTM.Models.Session
 {
     [Table("sessions")]
     public class Session

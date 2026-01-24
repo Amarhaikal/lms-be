@@ -1,9 +1,9 @@
 using AutoMapper;
-using LMS.DTOs.Parameter;
-using LMS.DTOs.User;
-using LMS.Models.Parameter;
-using LMS.Models.User;
-namespace LMS.Mappings
+using QUANTM.DTOs.Parameter;
+using QUANTM.DTOs.User;
+using QUANTM.Models.Parameter;
+using QUANTM.Models.User;
+namespace QUANTM.Mappings
 {
     public class MappingProfile : Profile
     {
@@ -15,7 +15,7 @@ namespace LMS.Mappings
             CreateMap<SystemCode, SystemCodeNestedDto>();
             CreateMap<User, UserDetailsDto>()
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role));
-            CreateMap<Models.Session.Session, LMS.DTOs.Session.SessionDto>();
+            CreateMap<Models.Session.Session, QUANTM.DTOs.Session.SessionDto>();
 
             // DTO to Entity mappings
             CreateMap<CodeTypeCreateDto, CodeType>();

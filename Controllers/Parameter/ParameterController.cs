@@ -1,15 +1,15 @@
 using System.Text.Json;
 using AutoMapper;
-using LMS.Controllers.Common;
-using LMS.Data;
-using LMS.DTOs.Parameter;
-using LMS.Model.Common;
-using LMS.Models.Parameter;
+using QUANTM.Controllers.Common;
+using QUANTM.Data;
+using QUANTM.DTOs.Parameter;
+using QUANTM.Model.Common;
+using QUANTM.Models.Parameter;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace LMS.Controllers.Parameter
+namespace QUANTM.Controllers.Parameter
 {
     [Authorize]
     [Route("api/parameter")]

@@ -1,4 +1,4 @@
-﻿namespace LMS.Model.Common
+﻿namespace QUANTM.Model.Common
 {
     public class ApiResponse<T>
     {

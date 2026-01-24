@@ -1,5 +1,5 @@
-using LMS;
-using LMS.Data;
+using QUANTM;
+using QUANTM.Data;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -72,20 +72,20 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddAutoMapper(typeof(Program));
 
 // Add JWT Service
-builder.Services.AddScoped<LMS.Services.Auth.JwtService>();
+builder.Services.AddScoped<QUANTM.Services.Auth.JwtService>();
 
 // Add Audit Service
-builder.Services.AddScoped<LMS.Services.Auth.AuditService>();
+builder.Services.AddScoped<QUANTM.Services.Auth.AuditService>();
 builder.Services.AddHttpContextAccessor();
 
 // Add Password Policy Service
-builder.Services.AddScoped<LMS.Services.Auth.PasswordPolicyService>();
+builder.Services.AddScoped<QUANTM.Services.Auth.PasswordPolicyService>();
 
 // Add Email Service
-builder.Services.AddScoped<LMS.Services.Auth.EmailService>();
+builder.Services.AddScoped<QUANTM.Services.Auth.EmailService>();
 
 // Add Encryption Service
-builder.Services.AddScoped<LMS.Services.Auth.EncryptionService>();
+builder.Services.AddScoped<QUANTM.Services.Auth.EncryptionService>();
 
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -144,7 +144,7 @@ builder.Services.AddSingleton<AspNetCoreRateLimit.IProcessingStrategy, AspNetCor
 var app = builder.Build();
 
 // Add logging middleware
-app.UseMiddleware<LMS.Middleware.LoggingMiddleware>();
+app.UseMiddleware<QUANTM.Middleware.LoggingMiddleware>();
 
 // if (app.Environment.IsDevelopment())
 // {
@@ -162,8 +162,8 @@ app.UseSwaggerUI(options =>
 });
 
 
-// display "LMS API is running" when route to /
-app.MapGet("/", () => "LMS API is running");
+// display "QUANTM API is running" when route to /
+app.MapGet("/", () => "QUANTM API is running");
 
 if (!app.Environment.IsDevelopment())
 {
@@ -174,10 +174,10 @@ if (!app.Environment.IsDevelopment())
 app.UseMiddleware<AspNetCoreRateLimit.IpRateLimitMiddleware>();
 
 app.UseCors("BankingPolicy");
-app.UseMiddleware<LMS.Middleware.SecurityHeadersMiddleware>();
+app.UseMiddleware<QUANTM.Middleware.SecurityHeadersMiddleware>();
 
 app.UseAuthentication();
-app.UseMiddleware<LMS.Middleware.SessionValidationMiddleware>();
+app.UseMiddleware<QUANTM.Middleware.SessionValidationMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
 

@@ -2,9 +2,9 @@ pipeline {
     agent any
     
     environment {
-        DOCKER_IMAGE = 'lms-backend'
+        DOCKER_IMAGE = 'quantm-backend'
         DOCKER_TAG = "${BUILD_NUMBER}"
-        COMPOSE_PROJECT_NAME = 'lms'
+        COMPOSE_PROJECT_NAME = 'quantm'
     }
     
     stages {
@@ -41,9 +41,9 @@ pipeline {
                 script {
                     echo 'Stopping old containers...'
                     sh """
-                        cd /var/www/lms/lms-be
+                        cd /var/www/quantm/quantm-be
                         docker compose down -v || true
-                        docker rm -f lms-mysql lms-backend || true
+                        docker rm -f quantm-mysql quantm-backend || true
                     """
                 }
             }
@@ -55,7 +55,7 @@ pipeline {
                     echo 'Syncing code from workspace to deployment directory...'
                     sh """
                         # Create deployment directory if it doesn't exist
-                        mkdir -p /var/www/lms/lms-be
+                        mkdir -p /var/www/quantm/quantm-be
                         
                         # Sync all files except .git, bin, obj, logs, and .env
                         rsync -av --delete \
@@ -64,7 +64,7 @@ pipeline {
                             --exclude='obj' \
                             --exclude='logs' \
                             --exclude='.env' \
-                            ${WORKSPACE}/ /var/www/lms/lms-be/
+                            ${WORKSPACE}/ /var/www/quantm/quantm-be/
                         
                         echo 'Code sync completed!'
                     """
@@ -77,7 +77,7 @@ pipeline {
                 script {
                     echo 'Deploying new containers...'
                     sh """
-                        cd /var/www/lms/lms-be
+                        cd /var/www/quantm/quantm-be
                         docker compose up -d --build
                     """
                 }
@@ -97,12 +97,12 @@ pipeline {
                             bash -c "dotnet restore && dotnet tool install --global dotnet-ef && export PATH=\"\$PATH:/root/.dotnet/tools\" && dotnet ef migrations script --idempotent -o migration.sql"
                         
                         # Copy script to deployment directory
-                        cp ${WORKSPACE}/migration.sql /var/www/lms/lms-be/
+                        cp ${WORKSPACE}/migration.sql /var/www/quantm/quantm-be/
                         
                         # Apply migrations to MySQL container using credentials from .env
-                        cd /var/www/lms/lms-be
+                        cd /var/www/quantm/quantm-be
                         export \$(grep -v '^#' .env | xargs)
-                        docker exec -i lms-mysql mysql -u\${MYSQL_USER} -p\${MYSQL_PASSWORD} \${MYSQL_DATABASE} < migration.sql
+                        docker exec -i quantm-mysql mysql -u\${MYSQL_USER} -p\${MYSQL_PASSWORD} \${MYSQL_DATABASE} < migration.sql
                         
                         echo 'Database migrations completed!'
                     """
@@ -140,7 +140,7 @@ pipeline {
         }
         failure {
             echo 'Deployment failed!'
-            sh 'docker-compose logs lms-backend'
+            sh 'docker-compose logs quantm-backend'
         }
     }
 }

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 
-namespace LMS.Middleware
+namespace QUANTM.Middleware
 {
     public class SecurityHeadersMiddleware
     {

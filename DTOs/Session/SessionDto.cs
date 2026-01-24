@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace LMS.DTOs.Session
+namespace QUANTM.DTOs.Session
 {
     public class SessionDto
     {

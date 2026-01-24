@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using System.Text.Json;
-using LMS.Models;
+using QUANTM.Models;
 
-namespace LMS.Middleware
+namespace QUANTM.Middleware
 {
     public class LoggingMiddleware
     {

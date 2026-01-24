@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace LMS.Services.Auth
+namespace QUANTM.Services.Auth
 {
     public class EncryptionService
     {

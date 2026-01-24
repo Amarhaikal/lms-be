@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using LMS.Models;
+using QUANTM.Models;
 
-namespace LMS.Models.Auth
+namespace QUANTM.Models.Auth
 {
     [Table("password_history")]
     public class PasswordHistory

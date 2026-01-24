@@ -1,4 +1,4 @@
-namespace LMS.DTOs.Parameter
+namespace QUANTM.DTOs.Parameter
 {
     public class SystemCodeNestedDto
     {

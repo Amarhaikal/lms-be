@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace LMS.Models.Parameter;
+namespace QUANTM.Models.Parameter;
 
 [Table("system_codes")]
 public class SystemCode
