@@ -54,6 +54,9 @@ services:
       - Email__FromAddress=${EMAIL_FROM_ADDRESS}
       - Email__Username=${EMAIL_USERNAME}
       - Email__Password=${EMAIL_PASSWORD}
+      # Encryption Keys
+      - EncryptionKey=${ENCRYPTION_KEY}
+      - EncryptionSalt=${ENCRYPTION_SALT}
     depends_on:
       mysql:
         condition: service_healthy
