@@ -17,10 +17,14 @@ public class User
     [MaxLength(120, ErrorMessage = "Fullname cannot exceed 120 characters")]
     public string Fullname { get; set; } = null!;
 
+
     [Column("id_no")]
     [Required(ErrorMessage = "ID No. is required")]
-    [MaxLength(12, ErrorMessage = "ID No. cannot exceed 12 characters")]
+    [MaxLength(255)] // Increased for Encryption
     public string IdNo { get; set; } = null!;
+    [Column("id_no_hash")]
+    [MaxLength(64)] // SHA-256 hex string which is 64 chars
+    public string IdNoHash { get; set; } = null!; // New column for searching
 
     [Column("username")]
     [Required(ErrorMessage = "Username is required")]

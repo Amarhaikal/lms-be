@@ -84,6 +84,9 @@ builder.Services.AddScoped<LMS.Services.Auth.PasswordPolicyService>();
 // Add Email Service
 builder.Services.AddScoped<LMS.Services.Auth.EmailService>();
 
+// Add Encryption Service
+builder.Services.AddScoped<LMS.Services.Auth.EncryptionService>();
+
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 builder.Services.AddAuthentication(options =>
