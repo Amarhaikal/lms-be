@@ -7,12 +7,16 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
+    var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+                         ?? new[] { "http://localhost:3000" };
+
+    options.AddPolicy("BankingPolicy",
         builder =>
         {
-            builder.AllowAnyOrigin()
+            builder.WithOrigins(allowedOrigins)
                    .AllowAnyMethod()
-                   .AllowAnyHeader();
+                   .AllowAnyHeader()
+                   .AllowCredentials(); // Allow cookies/auth headers
         });
 });
 
@@ -166,7 +170,9 @@ if (!app.Environment.IsDevelopment())
 // Add IP Rate Limiting
 app.UseMiddleware<AspNetCoreRateLimit.IpRateLimitMiddleware>();
 
-app.UseCors("AllowAll");
+app.UseCors("BankingPolicy");
+app.UseMiddleware<LMS.Middleware.SecurityHeadersMiddleware>();
+
 app.UseAuthentication();
 app.UseMiddleware<LMS.Middleware.SessionValidationMiddleware>();
 app.UseAuthorization();
