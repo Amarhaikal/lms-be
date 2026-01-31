@@ -10,12 +10,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: scm.branches,
-                    extensions: [[$class: 'PruneStaleBranch']],
-                    userRemoteConfigs: scm.userRemoteConfigs
-                ])
+                checkout scm
             }
         }
         
