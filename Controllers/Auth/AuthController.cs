@@ -1,4 +1,3 @@
-using System.Text.Json;
 using AutoMapper;
 using QUANTM.Controllers.Common;
 using QUANTM.Data;
@@ -6,7 +5,6 @@ using QUANTM.DTOs.Auth;
 using QUANTM.DTOs.User;
 using QUANTM.Model.Common;
 using QUANTM.Models.Auth;
-using QUANTM.Models.User;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,11 +22,12 @@ namespace QUANTM.Controllers.Auth
         private readonly QUANTM.Services.Auth.PasswordPolicyService _passwordPolicyService;
         private readonly QUANTM.Services.Auth.EmailService _emailService;
         private readonly QUANTM.Services.Auth.EncryptionService _encryptionService;
+        private readonly IWebHostEnvironment _environment;
 
         public AuthController(ApplicationDbContext context, IMapper mapper, ILogger<AuthController> logger,
             QUANTM.Services.Auth.JwtService jwtService, QUANTM.Services.Auth.AuditService auditService,
             QUANTM.Services.Auth.PasswordPolicyService passwordPolicyService, QUANTM.Services.Auth.EmailService emailService,
-            QUANTM.Services.Auth.EncryptionService encryptionService)
+            QUANTM.Services.Auth.EncryptionService encryptionService, IWebHostEnvironment environment)
         {
             _context = context;
             _mapper = mapper;
@@ -38,6 +37,7 @@ namespace QUANTM.Controllers.Auth
             _passwordPolicyService = passwordPolicyService;
             _emailService = emailService;
             _encryptionService = encryptionService;
+            _environment = environment;
         }
 
         [HttpPost("register")]
@@ -106,7 +106,7 @@ namespace QUANTM.Controllers.Auth
                 var hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
                 var statusNewUser = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == "NEW");
 
-                var newUser = new User
+                var newUser = new Models.User.User
                 {
                     Fullname = request.Fullname,
                     IdNo = _encryptionService.Encrypt(request.IdNo), // Encrypt for storage
@@ -281,6 +281,16 @@ namespace QUANTM.Controllers.Auth
                     user.Role?.Code
                 );
 
+                var cookieOptions = new CookieOptions
+                {
+                    HttpOnly = true, // Prevents JavaScript access (XSS protection)
+                    Secure = !_environment.IsDevelopment(),  // Only send over HTTPS (set to false if testing locally without HTTPS),
+                    SameSite = SameSiteMode.Strict, // CSRF protection to prevent token theft
+                    Expires = DateTimeOffset.UtcNow.AddHours(4), // Session duration
+                };
+
+                Response.Cookies.Append("X-Access-Token", token, cookieOptions);
+
                 // Check for new IP BEFORE creating session
                 var knownIps = await _context.Sessions
                     .Where(s => s.UserId == user.Id && s.IpAddress != null)
@@ -336,7 +346,7 @@ namespace QUANTM.Controllers.Auth
                 var userDto = _mapper.Map<UserDetailsDto>(user);
                 userDto.IdNo = _encryptionService.Decrypt(userDto.IdNo);
 
-                return CResponseLoginSuccessful(token, userDto);
+                return CResponseLoginWithCookieSuccessful(userDto);
             }
             catch (Exception ex)
             {
@@ -349,14 +359,12 @@ namespace QUANTM.Controllers.Auth
         {
             try
             {
-                // Extract token from Authorization header
-                var authHeader = HttpContext.Request.Headers["Authorization"].ToString();
-                if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
+                var token = HttpContext.Request.Cookies["X-Access-Token"];
+
+                if (string.IsNullOrEmpty(token))
                 {
                     return CResponseUnauthorized("No token provided");
                 }
-
-                var token = authHeader.Substring("Bearer ".Length).Trim();
 
                 // Decode JWT token to get JTI
                 var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
@@ -385,6 +393,13 @@ namespace QUANTM.Controllers.Auth
 
                 // Log audit
                 await _auditService.LogAsync("USER_LOGOUT", "User", session.UserId, userId: session.UserId);
+
+                Response.Cookies.Delete("X-Access-Token", new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = !_environment.IsDevelopment(),
+                    SameSite = SameSiteMode.Strict
+                });
 
                 var response = new ApiResponse<string>
                 {

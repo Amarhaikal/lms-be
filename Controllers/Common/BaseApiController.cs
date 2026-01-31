@@ -127,11 +127,18 @@ namespace QUANTM.Controllers.Common
             {
                 Status = 200,
                 Message = "Login successful",
-                Data = new
-                {
-                    Token = token,
-                    User = user
-                }
+                Data = user
+            };
+            return Ok(response);
+        }
+
+        protected IActionResult CResponseLoginWithCookieSuccessful<T>(T user)
+        {
+            var response = new
+            {
+                Status = 200,
+                Message = "Login successful",
+                Data = user
             };
             return Ok(response);
         }

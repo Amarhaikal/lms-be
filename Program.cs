@@ -108,6 +108,26 @@ builder.Services.AddAuthentication(options =>
             System.Text.Encoding.UTF8.GetBytes(jwtSettings["Key"]!)
         )
     };
+
+    options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            // First, try to get token from Authorization header (for Swagger/Postman)
+            var authHeader = context.Request.Headers["Authorization"].ToString();
+            if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
+            {
+                context.Token = authHeader.Substring("Bearer ".Length).Trim();
+            }
+            // If not found in header, try to get from cookie (for browser)
+            else if (context.Request.Cookies.ContainsKey("X-Access-Token"))
+            {
+                context.Token = context.Request.Cookies["X-Access-Token"];
+            }
+
+            return Task.CompletedTask;
+        }
+    };
 });
 
 // Configure Rate Limiting
