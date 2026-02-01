@@ -44,6 +44,11 @@ public class User
     [MaxLength(12, ErrorMessage = "Phone number cannot exceed 12 characters")]
     public string? PhoneNo { get; set; }
 
+    [Column("gender_id")]
+    public int? GenderId { get; set; }
+    [ForeignKey("GenderId")]
+    public SystemCode? Gender { get; set; }
+
     [Column("address_id")]
     public int? AddressId { get; set; }
     [ForeignKey("AddressId")]

@@ -73,6 +73,13 @@ namespace QUANTM.Data
                     Code = "STT",
                     Description = "State",
                     CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
+                },
+                new CodeType
+                {
+                    Id = 5,
+                    Code = "GNDR",
+                    Description = "Gender",
+                    CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
                 }
             );
 
@@ -201,6 +208,23 @@ namespace QUANTM.Data
                     CodeTypeId = 4,
                     Code = "12",
                     Description = "Johor",
+                    CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
+                },
+                // Gender
+                new SystemCode
+                {
+                    Id = 16,
+                    CodeTypeId = 5,
+                    Code = "M",
+                    Description = "Male",
+                    CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
+                },
+                new SystemCode
+                {
+                    Id = 17,
+                    CodeTypeId = 5,
+                    Code = "F",
+                    Description = "Female",
                     CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
                 }
             );

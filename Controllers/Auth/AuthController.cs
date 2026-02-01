@@ -47,7 +47,8 @@ namespace QUANTM.Controllers.Auth
             {
                 var existingUserName = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
                 var existingUserEmail = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-                var idNoHash = _encryptionService.Hash(request.IdNo);
+                var rawIdNo = request.IdNo;
+                var idNoHash = _encryptionService.Hash(rawIdNo);
                 var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.IdNoHash == idNoHash);
 
                 if (existingUserName != null)
@@ -106,6 +107,19 @@ namespace QUANTM.Controllers.Auth
                 var hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
                 var statusNewUser = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == "NEW");
 
+                // Determine gender from last character of IdNo
+                string genderCode = "M"; // Default to Male
+                if (!string.IsNullOrEmpty(rawIdNo))
+                {
+                    char lastChar = rawIdNo[rawIdNo.Length - 1];
+                    if (char.IsDigit(lastChar))
+                    {
+                        int lastDigit = int.Parse(lastChar.ToString());
+                        genderCode = lastDigit % 2 == 0 ? "F" : "M";
+                    }
+                }
+                var gender = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == genderCode);
+
                 var newUser = new Models.User.User
                 {
                     Fullname = request.Fullname,
@@ -117,6 +131,7 @@ namespace QUANTM.Controllers.Auth
                     PasswordChangedAt = DateTime.UtcNow,
                     RoleId = request.RoleId,
                     StatusId = statusNewUser?.Id ?? 0,
+                    GenderId = gender?.Id,
                     CreatedBy = null,
                     CreatedAt = DateTime.UtcNow,
                     PasswordHistories = new List<PasswordHistory>

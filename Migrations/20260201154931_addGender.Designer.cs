@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QUANTM.Data;
 
@@ -11,9 +12,11 @@ using QUANTM.Data;
 namespace QUANTM.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260201154931_addGender")]
+    partial class addGender
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -322,13 +325,6 @@ namespace QUANTM.Migrations
                             Code = "STT",
                             CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "State"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Code = "GNDR",
-                            CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Gender"
                         });
                 });
 
@@ -499,22 +495,6 @@ namespace QUANTM.Migrations
                             CodeTypeId = 4,
                             CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Johor"
-                        },
-                        new
-                        {
-                            Id = 16,
-                            Code = "M",
-                            CodeTypeId = 5,
-                            CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Male"
-                        },
-                        new
-                        {
-                            Id = 17,
-                            Code = "F",
-                            CodeTypeId = 5,
-                            CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Female"
                         });
                 });
 
@@ -636,7 +616,8 @@ namespace QUANTM.Migrations
 
                     b.Property<int?>("GenderId")
                         .HasColumnType("int")
-                        .HasColumnName("gender_id");
+                        .HasColumnName("gender_id")
+                        .HasAnnotation("MySql:After", "phone_no");
 
                     b.Property<string>("IdNo")
                         .IsRequired()
@@ -767,7 +748,8 @@ namespace QUANTM.Migrations
 
                     b.HasOne("QUANTM.Models.Parameter.SystemCode", "Gender")
                         .WithMany()
-                        .HasForeignKey("GenderId");
+                        .HasForeignKey("GenderId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("QUANTM.Models.Common.Document", "ProfileImage")
                         .WithMany()
