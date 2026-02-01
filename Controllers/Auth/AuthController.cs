@@ -281,6 +281,7 @@ namespace QUANTM.Controllers.Auth
                     user.Username,
                     user.Email,
                     user.RoleId,
+                    user.Fullname,
                     user.Role?.Code
                 );
 

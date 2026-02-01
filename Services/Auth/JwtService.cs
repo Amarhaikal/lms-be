@@ -14,7 +14,7 @@ namespace QUANTM.Services.Auth
             _configuration = configuration;
         }
 
-        public (string Token, string Jti) GenerateToken(int userId, string username, string email, int roleId, string? roleName = null)
+        public (string Token, string Jti) GenerateToken(int userId, string username, string email, int roleId, string? fullname = null, string? roleName = null)
         {
             var jwtSettings = _configuration.GetSection("Jwt");
             var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
@@ -31,6 +31,11 @@ namespace QUANTM.Services.Auth
                 new Claim("role_id", roleId.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, jti)
             };
+
+            if (!string.IsNullOrEmpty(fullname))
+            {
+                claims.Add(new Claim(ClaimTypes.GivenName, fullname));
+            }
 
             if (!string.IsNullOrEmpty(roleName))
             {

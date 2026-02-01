@@ -50,17 +50,15 @@ namespace QUANTM.Controllers.User
                 {
                     return CResponseUnauthorized("User not found");
                 }
-                var userId = int.Parse(userIdClaim);
 
-                // get username and email from token
+                // get username and name from token
                 var username = User.FindFirst(ClaimTypes.Name)?.Value;
-                var email = User.FindFirst(ClaimTypes.Email)?.Value;
+                var name = User.FindFirst(ClaimTypes.GivenName)?.Value;
 
                 var myNameAndUsername = new
                 {
-                    UserId = userId,
+                    Name = name,
                     Username = username,
-                    Email = email
                 };
 
                 return CResponseGetSuccessful(myNameAndUsername);
