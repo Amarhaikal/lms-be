@@ -71,7 +71,7 @@ namespace QUANTM.Controllers.User
         {
             try
             {
-                var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id);
+                var user = await _context.Users.Include(u => u.Role).Include(u => u.Gender).FirstOrDefaultAsync(u => u.Id == id);
                 if (user == null)
                 {
                     return CResponseNotFound();
