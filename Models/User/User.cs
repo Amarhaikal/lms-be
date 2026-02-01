@@ -49,6 +49,11 @@ public class User
     [ForeignKey("AddressId")]
     public Address? Address { get; set; }
 
+    [Column("profile_image_id")]
+    public int? ProfileImageId { get; set; }
+    [ForeignKey("ProfileImageId")]
+    public Document? ProfileImage { get; set; }
+
     [Column("status_id")]
     [Required(ErrorMessage = "Status is required")]
     public int StatusId { get; set; }

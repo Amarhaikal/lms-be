@@ -87,6 +87,9 @@ builder.Services.AddScoped<QUANTM.Services.Auth.EmailService>();
 // Add Encryption Service
 builder.Services.AddScoped<QUANTM.Services.Auth.EncryptionService>();
 
+// Add Document Service
+builder.Services.AddScoped<QUANTM.Services.Common.IDocumentService, QUANTM.Services.Common.DocumentService>();
+
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 builder.Services.AddAuthentication(options =>

@@ -16,15 +16,82 @@ namespace QUANTM.Controllers.User
         private readonly IMapper _mapper;
         private readonly Services.Auth.AuditService _auditService;
         private readonly Services.Auth.EncryptionService _encryptionService;
+        private readonly Services.Common.IDocumentService _documentService;
         private readonly ILogger<UserController> _logger;
 
-        public UserController(ApplicationDbContext context, IMapper mapper, Services.Auth.AuditService auditService, Services.Auth.EncryptionService encryptionService, ILogger<UserController> logger)
+        public UserController(ApplicationDbContext context, IMapper mapper, Services.Auth.AuditService auditService, Services.Auth.EncryptionService encryptionService, Services.Common.IDocumentService documentService, ILogger<UserController> logger)
         {
             _context = context;
             _mapper = mapper;
             _auditService = auditService;
             _encryptionService = encryptionService;
+            _documentService = documentService;
             _logger = logger;
+        }
+
+        [Authorize]
+        [HttpPut("user-image/{userId}")]
+        public async Task<IActionResult> UpdateUserUserImage(int userId, IFormFile file)
+        {
+            try
+            {
+                var currentUserIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var currentUserRole = User.FindFirst(ClaimTypes.Role)?.Value;
+
+                if (string.IsNullOrEmpty(currentUserIdStr) || !int.TryParse(currentUserIdStr, out int currentUserId))
+                {
+                    return CResponseUnauthorized("User not found");
+                }
+
+                // Security Check: Allow if updating own profile OR is Admin/Super Admin
+                bool isSelfUpdate = currentUserId == userId;
+                bool isAdmin = currentUserRole == "SA" || currentUserRole == "ADM";
+
+                if (!isSelfUpdate && !isAdmin)
+                {
+                    return StatusCode(403, new { status = 403, message = "You are not authorized to update this user's profile image." });
+                }
+
+                // Validation
+                if (file == null || file.Length == 0)
+                {
+                    return CResponseBadRequest("No file provided.");
+                }
+
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
+                var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+                if (!allowedExtensions.Contains(extension))
+                {
+                    return CResponseBadRequest("Only .jpg and .png files are allowed.");
+                }
+
+                const long maxFileSize = 5 * 1024 * 1024; // 5MB
+                if (file.Length > maxFileSize)
+                {
+                    return CResponseBadRequest("File size cannot exceed 5MB.");
+                }
+
+                var document = await _documentService.UploadFileAsync(file, userId, "User Profile Image");
+
+                var user = await _context.Users.FindAsync(userId);
+                if (user == null)
+                {
+                    return CResponseUnauthorized("User record not found");
+                }
+
+                user.ProfileImageId = document.Id;
+                await _context.SaveChangesAsync();
+
+                return CResponseCreateSuccessful(new { ProfileImageId = document.Id, FilePath = document.FilePath });
+            }
+            catch (ArgumentException ex)
+            {
+                return CResponseBadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return CResponseException(ex.Message);
+            }
         }
 
         [Authorize]

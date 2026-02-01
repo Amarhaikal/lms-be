@@ -18,6 +18,7 @@ namespace QUANTM.Data
         // Common
         public DbSet<Screen> Screens { get; set; }
         public DbSet<Address> Addresses { get; set; }
+        public DbSet<Document> Documents { get; set; }
 
         // Parameters
         public DbSet<CodeType> CodeTypes { get; set; }

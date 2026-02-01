@@ -58,6 +58,16 @@ namespace QUANTM.Controllers.Common
             return BadRequest(response);
         }
 
+        protected IActionResult CResponseBadRequest(string message)
+        {
+            var response = new ApiResponse<string>
+            {
+                Status = 400,
+                Message = message
+            };
+            return BadRequest(response);
+        }
+
         protected IActionResult CResponseCreateSuccessful<T>(T data)
         {
             var response = new ApiResponse<T>
