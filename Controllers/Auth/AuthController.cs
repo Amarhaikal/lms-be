@@ -294,10 +294,8 @@ namespace QUANTM.Controllers.Auth
                 var (token, jti) = _jwtService.GenerateToken(
                     user.Id,
                     user.Username,
-                    user.Email,
                     user.RoleId,
-                    user.Fullname,
-                    user.Role?.Code
+                    user.Role?.Code ?? ""
                 );
 
                 var cookieOptions = new CookieOptions

@@ -152,8 +152,8 @@ namespace QUANTM.Controllers.User
         }
 
         [Authorize]
-        [HttpGet("my-username")]
-        public async Task<IActionResult> GetMyNameAndUsername()
+        [HttpGet("mini-profile")]
+        public async Task<IActionResult> MiniProfile()
         {
             try
             {
@@ -167,25 +167,30 @@ namespace QUANTM.Controllers.User
                     _logger.LogInformation("Claim: {Type} = {Value}", claim.Type, claim.Value);
                 }
 
-                // get user id from token - use ClaimTypes (ASP.NET transforms claim types)
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                _logger.LogInformation("User ID from NameIdentifier claim: {UserId}", userIdClaim);
-                if (userIdClaim == null)
+                // get user id from token
+                var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
                 {
                     return CResponseUnauthorized("User not found");
                 }
 
-                // get username and name from token
-                var username = User.FindFirst(ClaimTypes.Name)?.Value;
-                var name = User.FindFirst(ClaimTypes.GivenName)?.Value;
-
-                var myNameAndUsername = new
+                // Fetch live data from DB to get the latest profile image
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                if (user == null)
                 {
-                    Name = name,
-                    Username = username,
+                    return CResponseUnauthorized("User record not found");
+                }
+
+                var myMiniProfile = new
+                {
+                    Name = user.Fullname,
+                    Username = user.Username,
+                    ProfileImageUrl = user.ProfileImageId.HasValue
+                        ? $"/api/documents/{user.ProfileImageId}/content"
+                        : null
                 };
 
-                return CResponseGetSuccessful(myNameAndUsername);
+                return CResponseGetSuccessful(myMiniProfile);
             }
             catch (Exception ex)
             {
