@@ -1,10 +1,11 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using QUANTM.Controllers.Common;
 using QUANTM.Data;
+using QUANTM.DTOs.User;
 
 namespace QUANTM.Controllers.User
 {
@@ -30,8 +31,64 @@ namespace QUANTM.Controllers.User
         }
 
         [Authorize]
-        [HttpPut("user-image/{userId}")]
-        public async Task<IActionResult> UpdateUserUserImage(int userId, IFormFile file)
+        [HttpGet("list")]
+        public async Task<IActionResult> GetUsers([FromQuery] UserListParamsDto userListParamsDto)
+        {
+            try
+            {
+                var query = _context.Users.Include(u => u.Role).AsQueryable();
+                if (!string.IsNullOrEmpty(userListParamsDto.Fullname))
+                {
+                    query = query.Where(u => u.Fullname.Contains(userListParamsDto.Fullname));
+                }
+                if (!string.IsNullOrEmpty(userListParamsDto.Username))
+                {
+                    query = query.Where(u => u.Username.Contains(userListParamsDto.Username));
+                }
+                if (!string.IsNullOrEmpty(userListParamsDto.RoleCode))
+                {
+                    query = query.Where(u => u.Role.Code == userListParamsDto.RoleCode);
+                }
+                var users = await query.Skip((userListParamsDto.PageNo - 1) * userListParamsDto.PageSize).Take(userListParamsDto.PageSize).ToListAsync();
+                var userDtos = _mapper.Map<List<UserDetailsDto>>(users);
+
+                foreach (var userDto in userDtos)
+                {
+                    userDto.IdNo = _encryptionService.Decrypt(userDto.IdNo);
+                }
+
+                return CResponseGetListSuccessful(userDtos, users.Count, userListParamsDto.PageNo, userListParamsDto.PageSize);
+            }
+            catch (Exception ex)
+            {
+                return CResponseException(ex.Message);
+            }
+        }
+
+        [Authorize]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetUserById(int id)
+        {
+            try
+            {
+                var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id);
+                if (user == null)
+                {
+                    return CResponseNotFound();
+                }
+                var userDto = _mapper.Map<UserDetailsDto>(user);
+                userDto.IdNo = _encryptionService.Decrypt(userDto.IdNo);
+                return CResponseGetSuccessful(userDto);
+            }
+            catch (Exception ex)
+            {
+                return CResponseException(ex.Message);
+            }
+        }
+
+        [Authorize]
+        [HttpPut("image/{userId}")]
+        public async Task<IActionResult> UpdateUserImage(int userId, IFormFile file)
         {
             try
             {

@@ -14,7 +14,11 @@ namespace QUANTM.Mappings
             CreateMap<SystemCode, SystemCodeDto>();
             CreateMap<SystemCode, SystemCodeNestedDto>();
             CreateMap<User, UserDetailsDto>()
-                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role));
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role))
+                .ForMember(dest => dest.ProfileImageUrl, opt => opt.MapFrom((src, dest, destMember, context) =>
+                    src.ProfileImageId.HasValue
+                        ? $"/api/documents/{src.ProfileImageId}/content"
+                        : null));
             CreateMap<Models.Session.Session, QUANTM.DTOs.Session.SessionDto>();
 
             // DTO to Entity mappings

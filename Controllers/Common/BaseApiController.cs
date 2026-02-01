@@ -121,6 +121,23 @@ namespace QUANTM.Controllers.Common
             return Ok(response);
         }
 
+        protected IActionResult CResponseGetListSuccessful<T>(List<T> data, int total, int page, int pageSize)
+        {
+            var response = new ApiResponse<PagedData<T>>
+            {
+                Status = 200,
+                Message = "Data retrieved successfully",
+                Data = new PagedData<T>
+                {
+                    Data = data,
+                    TotalCount = total,
+                    PageNo = page,
+                    PageSize = pageSize
+                }
+            };
+            return Ok(response);
+        }
+
         protected IActionResult CResponseNotFound()
         {
             var response = new ApiResponse<string>

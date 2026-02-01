@@ -6,4 +6,12 @@
         public string Message { get; set; } = string.Empty;
         public T? Data { get; set; }
     }
+
+    public class PagedData<T>
+    {
+        public List<T> Data { get; set; } = new List<T>();
+        public int TotalCount { get; set; }
+        public int PageNo { get; set; }
+        public int PageSize { get; set; }
+    }
 }
