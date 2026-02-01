@@ -28,15 +28,25 @@ namespace QUANTM.Middleware
                 return;
             }
 
-            // Extract token from Authorization header
+            // Extract token from Authorization header or cookie
+            string? token = null;
             var authHeader = context.Request.Headers["Authorization"].ToString();
-            if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
+
+            if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
+            {
+                token = authHeader.Substring("Bearer ".Length).Trim();
+            }
+            else if (context.Request.Cookies.ContainsKey("X-Access-Token"))
+            {
+                token = context.Request.Cookies["X-Access-Token"];
+            }
+
+            // If no token found, skip validation
+            if (string.IsNullOrEmpty(token))
             {
                 await _next(context);
                 return;
             }
-
-            var token = authHeader.Substring("Bearer ".Length).Trim();
 
             try
             {

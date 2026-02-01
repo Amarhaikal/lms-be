@@ -40,7 +40,7 @@ namespace QUANTM.Services.Auth
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddHours(4),
+                Expires = DateTime.UtcNow.AddMinutes(10),
                 Issuer = issuer,
                 Audience = audience,
                 SigningCredentials = new SigningCredentials(

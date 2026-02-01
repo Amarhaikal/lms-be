@@ -132,18 +132,21 @@ namespace QUANTM.Controllers.Auth
                 _context.Users.Add(newUser);
                 await _context.SaveChangesAsync();
 
-                // Send email in background (fire-and-forget)
-                _ = Task.Run(async () =>
+                // Send email in background (fire-and-forget) - only in production
+                if (!_environment.IsDevelopment())
                 {
-                    try
+                    _ = Task.Run(async () =>
                     {
-                        await _emailService.SendRegisterSuccessEmailAsync(request.Email, request.Username);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failed to send registration email to {Email}", request.Email);
-                    }
-                });
+                        try
+                        {
+                            await _emailService.SendRegisterSuccessEmailAsync(request.Email, request.Username);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failed to send registration email to {Email}", request.Email);
+                        }
+                    });
+                }
 
                 return CResponseRegisterSuccessful();
 
@@ -286,7 +289,7 @@ namespace QUANTM.Controllers.Auth
                     HttpOnly = true, // Prevents JavaScript access (XSS protection)
                     Secure = !_environment.IsDevelopment(),  // Only send over HTTPS (set to false if testing locally without HTTPS),
                     SameSite = SameSiteMode.Strict, // CSRF protection to prevent token theft
-                    Expires = DateTimeOffset.UtcNow.AddHours(4), // Session duration
+                    Expires = DateTimeOffset.UtcNow.AddMinutes(10), // Session duration
                 };
 
                 Response.Cookies.Append("X-Access-Token", token, cookieOptions);
@@ -305,9 +308,9 @@ namespace QUANTM.Controllers.Auth
                 {
                     UserId = user.Id,
                     TokenJti = jti,
-                    SessionDuration = 4,
+                    SessionDuration = 10,
                     CreatedAt = DateTime.UtcNow,
-                    ExpiresAt = DateTime.UtcNow.AddHours(4),
+                    ExpiresAt = DateTime.UtcNow.AddMinutes(10),
                     IsActive = true,
                     IpAddress = ipAddress,
                     UserAgent = userAgent,
@@ -321,8 +324,8 @@ namespace QUANTM.Controllers.Auth
                 // Log successful login
                 await _auditService.LogAsync("USER_LOGIN", "User", user.Id, userId: user.Id);
 
-                // Send email notification if new IP detected (in background)
-                if (isNewIp)
+                // Send email notification if new IP detected (in background) - only in production
+                if (isNewIp && !_environment.IsDevelopment())
                 {
                     var userEmail = user.Email;
                     var userFullname = user.Fullname;
