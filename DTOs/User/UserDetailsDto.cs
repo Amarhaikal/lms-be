@@ -14,5 +14,7 @@ namespace QUANTM.DTOs.User
         public string Email { get; set; } = null!;
         [JsonPropertyName("role")]
         public SystemCodeNestedDto? Role { get; set; }
+
+        public string? ProfileImageUrl { get; set; }
     }
 }
