@@ -363,7 +363,7 @@ namespace QUANTM.Controllers.Auth
                 var userDto = _mapper.Map<UserDetailsDto>(user);
                 userDto.IdNo = _encryptionService.Decrypt(userDto.IdNo);
 
-                return CResponseLoginWithCookieSuccessful(userDto, token);
+                return CResponseLoginWithCookieSuccessful(userDto);
             }
             catch (Exception ex)
             {

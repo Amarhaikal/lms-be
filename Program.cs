@@ -128,15 +128,6 @@ builder.Services.AddAuthentication(options =>
                 context.Token = context.Request.Cookies["X-Access-Token"];
             }
 
-            if (string.IsNullOrEmpty(context.Token))
-            {
-                Console.WriteLine($"[Auth Debug] No token found for {context.Request.Path}");
-            }
-            else
-            {
-                Console.WriteLine($"[Auth Debug] Token found for {context.Request.Path}");
-            }
-
             return Task.CompletedTask;
         }
     };

@@ -159,14 +159,13 @@ namespace QUANTM.Controllers.Common
             return Ok(response);
         }
 
-        protected IActionResult CResponseLoginWithCookieSuccessful<T>(T user, string? token = null)
+        protected IActionResult CResponseLoginWithCookieSuccessful<T>(T user)
         {
             var response = new
             {
                 Status = 200,
                 Message = "Login successful",
-                Data = user,
-                Token = token // Include token in body as fallback for Swagger/Frontend
+                Data = user
             };
             return Ok(response);
         }
