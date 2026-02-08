@@ -16,7 +16,8 @@ namespace QUANTM.Data
         public DbSet<User> Users { get; set; }
 
         // Common
-        public DbSet<Screen> Screens { get; set; }
+        public DbSet<Menu> Menus { get; set; }
+        public DbSet<MenuRole> MenuRoles { get; set; }
         public DbSet<Address> Addresses { get; set; }
         public DbSet<Document> Documents { get; set; }
 
@@ -43,6 +44,30 @@ namespace QUANTM.Data
                 .WithMany(ct => ct.SystemCodes)
                 .HasForeignKey(sc => sc.CodeTypeId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure relationships for MenuRole
+            modelBuilder.Entity<MenuRole>()
+                .HasOne(mr => mr.Menu)
+                .WithMany(m => m.MenuRoles)
+                .HasForeignKey(mr => mr.MenuId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<MenuRole>()
+                .HasOne(mr => mr.Role)
+                .WithMany(r => r.MenuRoles)
+                .HasForeignKey(mr => mr.RoleId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure relationships for Menu
+            modelBuilder.Entity<Menu>(entity =>
+            {
+                entity.HasIndex(e => e.Code).IsUnique();
+
+                entity.HasOne(m => m.Parent)
+                      .WithMany(m => m.SubMenus)
+                      .HasForeignKey(m => m.ParentId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
 
             // Seed data for CodeTypes
             modelBuilder.Entity<CodeType>().HasData(
@@ -228,6 +253,48 @@ namespace QUANTM.Data
                     CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
                 }
             );
+
+            // Seed data for Menus
+            modelBuilder.Entity<Menu>().HasData(
+                new Menu { Id = 1, Name = "Settings", Code = "SETTINGS", Icon = "settings", CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc) },
+                new Menu { Id = 2, ParentId = 1, Name = "Profile", Code = "PROFILE", Url = "/settings/profile", Icon = "person", CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc) },
+                new Menu { Id = 3, Name = "Administrator", Code = "ADMIN", Icon = "admin_panel_settings", CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc) },
+                new Menu { Id = 4, ParentId = 3, Name = "Users", Code = "USERS", Url = "/admin/users", Icon = "group", CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc) },
+                new Menu { Id = 5, ParentId = 3, Name = "System Codes", Code = "SYSTEM_CODES", Url = "/admin/system-codes", Icon = "terminal", CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc) }
+            );
+
+            // Seed data for MenuRoles
+            modelBuilder.Entity<MenuRole>().HasData(
+                // Settings & Profile - All Roles (SA: 5, ADM: 8, OFCR: 6, SPRVSR: 7)
+                new MenuRole { Id = 1, MenuId = 1, RoleId = 5, CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc) },
+                new MenuRole { Id = 2, MenuId = 1, RoleId = 8, CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc) },
+                new MenuRole { Id = 3, MenuId = 1, RoleId = 6, CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc) },
+                new MenuRole { Id = 4, MenuId = 1, RoleId = 7, CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc) },
+
+                new MenuRole { Id = 5, MenuId = 2, RoleId = 5, CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc) },
+                new MenuRole { Id = 6, MenuId = 2, RoleId = 8, CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc) },
+                new MenuRole { Id = 7, MenuId = 2, RoleId = 6, CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc) },
+                new MenuRole { Id = 8, MenuId = 2, RoleId = 7, CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc) },
+
+                // Administrator - Super Admin & Admin (5, 8)
+                new MenuRole { Id = 9, MenuId = 3, RoleId = 5, CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc) },
+                new MenuRole { Id = 10, MenuId = 3, RoleId = 8, CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc) },
+
+                // Users - Only Admin & Super Admin (5, 8)
+                new MenuRole { Id = 11, MenuId = 4, RoleId = 5, CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc) },
+                new MenuRole { Id = 12, MenuId = 4, RoleId = 8, CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc) },
+
+                // System Codes - All Roles (5, 8, 6, 7)
+                new MenuRole { Id = 13, MenuId = 5, RoleId = 5, CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc) },
+                new MenuRole { Id = 14, MenuId = 5, RoleId = 8, CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc) },
+                new MenuRole { Id = 15, MenuId = 5, RoleId = 6, CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc) },
+                new MenuRole { Id = 16, MenuId = 5, RoleId = 7, CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc) },
+
+                // Ensure Administrator parent is also visible for others who see System Codes
+                new MenuRole { Id = 17, MenuId = 3, RoleId = 6, CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc) },
+                new MenuRole { Id = 18, MenuId = 3, RoleId = 7, CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc) }
+            );
+
         }
     }
 }
