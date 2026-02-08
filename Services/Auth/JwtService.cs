@@ -17,10 +17,18 @@ namespace QUANTM.Services.Auth
         public (string Token, string Jti) GenerateToken(int userId, string username, int roleId, string roleCode)
         {
             var jwtSettings = _configuration.GetSection("Jwt");
-            var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
-            var issuer = jwtSettings["Issuer"];
-            var audience = jwtSettings["Audience"];
 
+            // Priority: Environment Variable (Flat) > Configuration (appsettings/hierarchical env)
+            var keyStr = Environment.GetEnvironmentVariable("JWT_KEY") ?? jwtSettings["Key"];
+            var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? jwtSettings["Issuer"];
+            var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? jwtSettings["Audience"];
+
+            if (string.IsNullOrEmpty(keyStr))
+            {
+                throw new InvalidOperationException("JWT Key is not configured.");
+            }
+
+            var key = Encoding.UTF8.GetBytes(keyStr);
             var jti = Guid.NewGuid().ToString();
 
             var claims = new List<Claim>

@@ -128,6 +128,15 @@ builder.Services.AddAuthentication(options =>
                 context.Token = context.Request.Cookies["X-Access-Token"];
             }
 
+            if (string.IsNullOrEmpty(context.Token))
+            {
+                Console.WriteLine($"[Auth Debug] No token found for {context.Request.Path}");
+            }
+            else
+            {
+                Console.WriteLine($"[Auth Debug] Token found for {context.Request.Path}");
+            }
+
             return Task.CompletedTask;
         }
     };
@@ -195,6 +204,11 @@ if (!app.Environment.IsDevelopment())
 
 // Add IP Rate Limiting
 app.UseMiddleware<AspNetCoreRateLimit.IpRateLimitMiddleware>();
+
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
+});
 
 app.UseCors("BankingPolicy");
 app.UseMiddleware<QUANTM.Middleware.SecurityHeadersMiddleware>();

@@ -300,10 +300,10 @@ namespace QUANTM.Controllers.Auth
 
                 var cookieOptions = new CookieOptions
                 {
-                    HttpOnly = true, // Prevents JavaScript access (XSS protection)
-                    Secure = !_environment.IsDevelopment(),  // Only send over HTTPS (set to false if testing locally without HTTPS),
-                    SameSite = SameSiteMode.Strict, // CSRF protection to prevent token theft
-                    Expires = DateTimeOffset.UtcNow.AddMinutes(10), // Session duration
+                    HttpOnly = true,
+                    Secure = Request.IsHttps, // Only secure if using HTTPS
+                    SameSite = SameSiteMode.Lax, // More compatible with different ports/subdomains
+                    Expires = DateTimeOffset.UtcNow.AddMinutes(10),
                 };
 
                 Response.Cookies.Append("X-Access-Token", token, cookieOptions);
@@ -363,7 +363,7 @@ namespace QUANTM.Controllers.Auth
                 var userDto = _mapper.Map<UserDetailsDto>(user);
                 userDto.IdNo = _encryptionService.Decrypt(userDto.IdNo);
 
-                return CResponseLoginWithCookieSuccessful(userDto);
+                return CResponseLoginWithCookieSuccessful(userDto, token);
             }
             catch (Exception ex)
             {
@@ -414,8 +414,8 @@ namespace QUANTM.Controllers.Auth
                 Response.Cookies.Delete("X-Access-Token", new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = !_environment.IsDevelopment(),
-                    SameSite = SameSiteMode.Strict
+                    Secure = Request.IsHttps,
+                    SameSite = SameSiteMode.Lax
                 });
 
                 var response = new ApiResponse<string>
