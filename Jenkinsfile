@@ -42,8 +42,7 @@ pipeline {
                     echo 'Stopping old containers...'
                     sh """
                         cd /var/www/quantm/quantm-be
-                        docker compose down -v || true
-                        docker rm -f quantm-mysql quantm-backend || true
+                        docker compose down || true
                     """
                 }
             }
