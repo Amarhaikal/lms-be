@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using QUANTM.Models.Common;
 
 namespace QUANTM.Models.Parameter;
 
@@ -37,4 +38,6 @@ public class SystemCode
 
     // Navigation property
     public CodeType? CodeType { get; set; }
+
+    public ICollection<MenuRole> MenuRoles { get; set; } = new List<MenuRole>();
 }
