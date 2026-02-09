@@ -303,7 +303,7 @@ namespace QUANTM.Controllers.Auth
                     HttpOnly = true,
                     Secure = Request.IsHttps, // Only secure if using HTTPS
                     SameSite = SameSiteMode.Lax, // More compatible with different ports/subdomains
-                    Expires = DateTimeOffset.UtcNow.AddMinutes(10),
+                    Expires = DateTimeOffset.UtcNow.AddMinutes(60),
                 };
 
                 Response.Cookies.Append("X-Access-Token", token, cookieOptions);
@@ -324,7 +324,7 @@ namespace QUANTM.Controllers.Auth
                     TokenJti = jti,
                     SessionDuration = 10,
                     CreatedAt = DateTime.UtcNow,
-                    ExpiresAt = DateTime.UtcNow.AddMinutes(10),
+                    ExpiresAt = DateTime.UtcNow.AddMinutes(60),
                     IsActive = true,
                     IpAddress = ipAddress,
                     UserAgent = userAgent,
