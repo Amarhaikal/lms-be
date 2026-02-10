@@ -66,12 +66,33 @@ namespace QUANTM.Controllers.User
         }
 
         [Authorize]
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetUserById(int id)
         {
             try
             {
                 var user = await _context.Users.Include(u => u.Role).Include(u => u.Gender).FirstOrDefaultAsync(u => u.Id == id);
+                if (user == null)
+                {
+                    return CResponseNotFound();
+                }
+                var userDto = _mapper.Map<UserDetailsDto>(user);
+                userDto.IdNo = _encryptionService.Decrypt(userDto.IdNo);
+                return CResponseGetSuccessful(userDto);
+            }
+            catch (Exception ex)
+            {
+                return CResponseException(ex.Message);
+            }
+        }
+
+        [Authorize]
+        [HttpGet("username/{username}")]
+        public async Task<IActionResult> GetUserByUsername(string username)
+        {
+            try
+            {
+                var user = await _context.Users.Include(u => u.Role).Include(u => u.Gender).FirstOrDefaultAsync(u => u.Username == username);
                 if (user == null)
                 {
                     return CResponseNotFound();
@@ -183,7 +204,7 @@ namespace QUANTM.Controllers.User
 
                 var myMiniProfile = new
                 {
-                    Name = user.Fullname,
+                    Fullname = user.Fullname,
                     Username = user.Username,
                     ProfileImageUrl = user.ProfileImageId.HasValue
                         ? $"/api/documents/{user.ProfileImageId}/content"
