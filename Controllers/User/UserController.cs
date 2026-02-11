@@ -36,7 +36,10 @@ namespace QUANTM.Controllers.User
         {
             try
             {
-                var query = _context.Users.Include(u => u.Role).AsQueryable();
+                var query = _context.Users
+                    .Include(u => u.Role)
+                    .Include(u => u.Status)
+                    .AsQueryable();
                 if (!string.IsNullOrEmpty(userListParamsDto.Fullname))
                 {
                     query = query.Where(u => u.Fullname.Contains(userListParamsDto.Fullname));
@@ -47,7 +50,7 @@ namespace QUANTM.Controllers.User
                 }
                 if (!string.IsNullOrEmpty(userListParamsDto.RoleCode))
                 {
-                    query = query.Where(u => u.Role.Code == userListParamsDto.RoleCode);
+                    query = query.Where(u => u.Role != null && u.Role.Code == userListParamsDto.RoleCode);
                 }
                 var users = await query.Skip((userListParamsDto.PageNo - 1) * userListParamsDto.PageSize).Take(userListParamsDto.PageSize).ToListAsync();
                 var userDtos = _mapper.Map<List<UserDetailsDto>>(users);
@@ -71,7 +74,13 @@ namespace QUANTM.Controllers.User
         {
             try
             {
-                var user = await _context.Users.Include(u => u.Role).Include(u => u.Gender).FirstOrDefaultAsync(u => u.Id == id);
+                var user = await _context.Users
+                    .Include(u => u.Role)
+                    .Include(u => u.Gender)
+                    .Include(u => u.Status)
+                    .Include(u => u.Address).ThenInclude(a => a!.State)
+                    .Include(u => u.Address).ThenInclude(a => a!.Country)
+                    .FirstOrDefaultAsync(u => u.Id == id);
                 if (user == null)
                 {
                     return CResponseNotFound();
@@ -92,7 +101,13 @@ namespace QUANTM.Controllers.User
         {
             try
             {
-                var user = await _context.Users.Include(u => u.Role).Include(u => u.Gender).FirstOrDefaultAsync(u => u.Username == username);
+                var user = await _context.Users
+                    .Include(u => u.Role)
+                    .Include(u => u.Gender)
+                    .Include(u => u.Status)
+                    .Include(u => u.Address).ThenInclude(a => a!.State)
+                    .Include(u => u.Address).ThenInclude(a => a!.Country)
+                    .FirstOrDefaultAsync(u => u.Username == username);
                 if (user == null)
                 {
                     return CResponseNotFound();
@@ -100,6 +115,111 @@ namespace QUANTM.Controllers.User
                 var userDto = _mapper.Map<UserDetailsDto>(user);
                 userDto.IdNo = _encryptionService.Decrypt(userDto.IdNo);
                 return CResponseGetSuccessful(userDto);
+            }
+            catch (Exception ex)
+            {
+                return CResponseException(ex.Message);
+            }
+        }
+
+        [Authorize]
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] UserUpdateDto userUpdateDto)
+        {
+            try
+            {
+                var user = await _context.Users
+                    .Include(u => u.Role)
+                    .Include(u => u.Gender)
+                    .Include(u => u.Status)
+                    .Include(u => u.Address).ThenInclude(a => a!.State)
+                    .Include(u => u.Address).ThenInclude(a => a!.Country)
+                    .FirstOrDefaultAsync(u => u.Id == id);
+
+                if (user == null)
+                {
+                    return CResponseNotFound();
+                }
+
+                // Map standard fields (non-navigation, non-encrypted)
+                _mapper.Map(userUpdateDto, user);
+
+                // Handle encryption for IdNo if it was updated
+                if (!string.IsNullOrEmpty(userUpdateDto.IdNo))
+                {
+                    user.IdNo = _encryptionService.Encrypt(userUpdateDto.IdNo);
+                    user.IdNoHash = _encryptionService.Hash(userUpdateDto.IdNo);
+                }
+
+                // Handle Gender Code Update
+                if (userUpdateDto.Gender?.Code != null)
+                {
+                    var gender = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == userUpdateDto.Gender.Code);
+                    if (gender != null) user.GenderId = gender.Id;
+                }
+
+                // Handle Role Code Update
+                if (userUpdateDto.Role?.Code != null)
+                {
+                    var role = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == userUpdateDto.Role.Code);
+                    if (role != null) user.RoleId = role.Id;
+                }
+
+                // Handle Status Code Update
+                if (userUpdateDto.Status?.Code != null)
+                {
+                    var status = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == userUpdateDto.Status.Code);
+                    if (status != null) user.StatusId = status.Id;
+                }
+
+                // Handle Address Update
+                if (userUpdateDto.Address != null)
+                {
+                    if (user.Address == null)
+                    {
+                        user.Address = new Models.Common.Address();
+                        _context.Addresses.Add(user.Address);
+                    }
+
+                    _mapper.Map(userUpdateDto.Address, user.Address);
+
+                    // Resolve Address State Code
+                    if (userUpdateDto.Address.State?.Code != null)
+                    {
+                        var state = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == userUpdateDto.Address.State.Code);
+                        if (state != null) user.Address.StateId = state.Id;
+                    }
+
+                    // Resolve Address Country Code
+                    if (userUpdateDto.Address.Country?.Code != null)
+                    {
+                        var country = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == userUpdateDto.Address.Country.Code);
+                        if (country != null) user.Address.CountryId = country.Id;
+                    }
+                }
+
+                var currentUserIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!string.IsNullOrEmpty(currentUserIdStr) && int.TryParse(currentUserIdStr, out int currentUserId))
+                {
+                    user.UpdatedBy = currentUserId;
+                }
+                user.UpdatedAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+
+                // Re-fetch the user to get a fresh copy with updated navigation properties for the response
+                var updatedUser = await _context.Users
+                    .Include(u => u.Role)
+                    .Include(u => u.Gender)
+                    .Include(u => u.Status)
+                    .Include(u => u.Address).ThenInclude(a => a!.State)
+                    .Include(u => u.Address).ThenInclude(a => a!.Country)
+                    .FirstOrDefaultAsync(u => u.Id == user.Id);
+
+                var userDto = _mapper.Map<UserDetailsDto>(updatedUser);
+                userDto.IdNo = _encryptionService.Decrypt(userDto.IdNo);
+
+                return CResponseUpdateSuccessful(userDto);
             }
             catch (Exception ex)
             {

@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using QUANTM.DTOs.Parameter;
+using QUANTM.DTOs.Common;
 
 namespace QUANTM.DTOs.User
 {
@@ -12,10 +13,15 @@ namespace QUANTM.DTOs.User
         public string IdNo { get; set; } = null!;
         public string Username { get; set; } = null!;
         public string Email { get; set; } = null!;
+        [JsonPropertyName("status")]
+        public SystemCodeNestedDto? Status { get; set; }
         [JsonPropertyName("role")]
         public SystemCodeNestedDto? Role { get; set; }
         [JsonPropertyName("gender")]
         public SystemCodeNestedDto? Gender { get; set; }
+        [JsonPropertyName("address")]
+        public AddressDto? Address { get; set; }
+
 
         public string? ProfileImageUrl { get; set; }
     }
