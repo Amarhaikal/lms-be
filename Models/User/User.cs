@@ -74,6 +74,9 @@ public class User
     [ForeignKey("RoleId")]
     public SystemCode? Role { get; set; }
 
+    [Column("joined_dt", TypeName = "date")]
+    public DateOnly? JoinedDt { get; set; }
+
     [Column("password_changed_at")]
     public DateTime? PasswordChangedAt { get; set; }
 

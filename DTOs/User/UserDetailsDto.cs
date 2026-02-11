@@ -9,6 +9,7 @@ namespace QUANTM.DTOs.User
         public int Id { get; set; }
         public string Fullname { get; set; } = null!;
         public string? Shortname { get; set; }
+        public DateOnly? JoinedDt { get; set; }
 
         [JsonPropertyName("id_no")]
         public string IdNo { get; set; } = null!;

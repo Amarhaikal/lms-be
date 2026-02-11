@@ -11,6 +11,9 @@ namespace QUANTM.DTOs.User
         [JsonPropertyName("shortname")]
         public string? Shortname { get; set; }
 
+        [JsonPropertyName("joined_dt")]
+        public DateOnly? JoinedDt { get; set; }
+
         [JsonPropertyName("id_no")]
         public string? IdNo { get; set; }
 
