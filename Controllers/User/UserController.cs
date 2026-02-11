@@ -325,6 +325,7 @@ namespace QUANTM.Controllers.User
                 var myMiniProfile = new
                 {
                     Fullname = user.Fullname,
+                    Shortname = user.Shortname,
                     Username = user.Username,
                     ProfileImageUrl = user.ProfileImageId.HasValue
                         ? $"/api/documents/{user.ProfileImageId}/content"

@@ -8,6 +8,9 @@ namespace QUANTM.DTOs.User
         [JsonPropertyName("fullname")]
         public string? Fullname { get; set; }
 
+        [JsonPropertyName("shortname")]
+        public string? Shortname { get; set; }
+
         [JsonPropertyName("id_no")]
         public string? IdNo { get; set; }
 

@@ -17,6 +17,9 @@ public class User
     [MaxLength(120, ErrorMessage = "Fullname cannot exceed 120 characters")]
     public string Fullname { get; set; } = null!;
 
+    [Column("shortname")]
+    [MaxLength(20, ErrorMessage = "Shortname cannot exceed 20 characters")]
+    public string? Shortname { get; set; }
 
     [Column("id_no")]
     [Required(ErrorMessage = "ID No. is required")]
