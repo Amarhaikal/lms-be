@@ -18,15 +18,17 @@ namespace QUANTM.Controllers.User
         private readonly Services.Auth.AuditService _auditService;
         private readonly Services.Auth.EncryptionService _encryptionService;
         private readonly Services.Common.IDocumentService _documentService;
+        private readonly Services.Auth.IdentityService _identityService;
         private readonly ILogger<UserController> _logger;
 
-        public UserController(ApplicationDbContext context, IMapper mapper, Services.Auth.AuditService auditService, Services.Auth.EncryptionService encryptionService, Services.Common.IDocumentService documentService, ILogger<UserController> logger)
+        public UserController(ApplicationDbContext context, IMapper mapper, Services.Auth.AuditService auditService, Services.Auth.EncryptionService encryptionService, Services.Common.IDocumentService documentService, Services.Auth.IdentityService identityService, ILogger<UserController> logger)
         {
             _context = context;
             _mapper = mapper;
             _auditService = auditService;
             _encryptionService = encryptionService;
             _documentService = documentService;
+            _identityService = identityService;
             _logger = logger;
         }
 
@@ -39,6 +41,8 @@ namespace QUANTM.Controllers.User
                 var query = _context.Users
                     .Include(u => u.Role)
                     .Include(u => u.Status)
+                    .Include(u => u.Creator)
+                    .Include(u => u.Updater)
                     .AsQueryable();
                 if (!string.IsNullOrEmpty(userListParamsDto.Fullname))
                 {
@@ -80,6 +84,8 @@ namespace QUANTM.Controllers.User
                     .Include(u => u.Status)
                     .Include(u => u.Address).ThenInclude(a => a!.State)
                     .Include(u => u.Address).ThenInclude(a => a!.Country)
+                    .Include(u => u.Creator)
+                    .Include(u => u.Updater)
                     .FirstOrDefaultAsync(u => u.Id == id);
                 if (user == null)
                 {
@@ -107,6 +113,8 @@ namespace QUANTM.Controllers.User
                     .Include(u => u.Status)
                     .Include(u => u.Address).ThenInclude(a => a!.State)
                     .Include(u => u.Address).ThenInclude(a => a!.Country)
+                    .Include(u => u.Creator)
+                    .Include(u => u.Updater)
                     .FirstOrDefaultAsync(u => u.Username == username);
                 if (user == null)
                 {
@@ -198,11 +206,7 @@ namespace QUANTM.Controllers.User
                     }
                 }
 
-                var currentUserIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!string.IsNullOrEmpty(currentUserIdStr) && int.TryParse(currentUserIdStr, out int currentUserId))
-                {
-                    user.UpdatedBy = currentUserId;
-                }
+                user.UpdatedBy = _identityService.GetUserId();
                 user.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
@@ -214,6 +218,8 @@ namespace QUANTM.Controllers.User
                     .Include(u => u.Status)
                     .Include(u => u.Address).ThenInclude(a => a!.State)
                     .Include(u => u.Address).ThenInclude(a => a!.Country)
+                    .Include(u => u.Creator)
+                    .Include(u => u.Updater)
                     .FirstOrDefaultAsync(u => u.Id == user.Id);
 
                 var userDto = _mapper.Map<UserDetailsDto>(updatedUser);

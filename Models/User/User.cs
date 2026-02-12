@@ -85,6 +85,8 @@ public class User
 
     [Column("created_by")]
     public int? CreatedBy { get; set; }
+    [ForeignKey("CreatedBy")]
+    public User? Creator { get; set; }
 
     [Column("created_at")]
     public DateTime CreatedAt { get; set; }
@@ -94,6 +96,8 @@ public class User
 
     [Column("updated_at")]
     public DateTime? UpdatedAt { get; set; }
+    [ForeignKey("UpdatedBy")]
+    public User? Updater { get; set; }
 
     [Column("failed_login_attempts")]
     public int FailedLoginAttempts { get; set; }

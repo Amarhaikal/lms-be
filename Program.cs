@@ -73,6 +73,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 
 // Add JWT Service
 builder.Services.AddScoped<QUANTM.Services.Auth.JwtService>();
+builder.Services.AddScoped<QUANTM.Services.Auth.IdentityService>();
 
 // Add Audit Service
 builder.Services.AddScoped<QUANTM.Services.Auth.AuditService>();
@@ -89,6 +90,9 @@ builder.Services.AddScoped<QUANTM.Services.Auth.EncryptionService>();
 
 // Add Document Service
 builder.Services.AddScoped<QUANTM.Services.Common.IDocumentService, QUANTM.Services.Common.DocumentService>();
+
+// Add Auth Service
+builder.Services.AddScoped<QUANTM.Services.Auth.IAuthService, QUANTM.Services.Auth.AuthService>();
 
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");

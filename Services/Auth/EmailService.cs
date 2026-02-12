@@ -14,7 +14,7 @@ namespace QUANTM.Services.Auth
             _logger = logger;
         }
 
-        public async Task SendAsync(string toEmail, string subject, string body)
+        public virtual async Task SendAsync(string toEmail, string subject, string body)
         {
             try
             {
@@ -57,7 +57,7 @@ namespace QUANTM.Services.Auth
             }
         }
 
-        public async Task SendAccountSuspendedEmailAsync(string toEmail, string username)
+        public virtual async Task SendAccountSuspendedEmailAsync(string toEmail, string username)
         {
             var subject = "Account Suspended - Security Alert";
             var body = $@"
@@ -78,7 +78,7 @@ namespace QUANTM.Services.Auth
             await SendAsync(toEmail, subject, body);
         }
 
-        public async Task SendAccountSuspendedAdminAlertAsync(
+        public virtual async Task SendAccountSuspendedAdminAlertAsync(
             string adminEmail,
             string adminName,
             string suspendedUsername,
@@ -114,7 +114,7 @@ namespace QUANTM.Services.Auth
             await SendAsync(adminEmail, subject, body);
         }
 
-        public async Task SendRegisterSuccessEmailAsync(string toEmail, string username)
+        public virtual async Task SendRegisterSuccessEmailAsync(string toEmail, string username)
         {
             var subject = "Account Created - Quantm Bank";
             var body = $@"
@@ -129,7 +129,7 @@ namespace QUANTM.Services.Auth
             await SendAsync(toEmail, subject, body);
         }
 
-        public async Task SendNewLoginAlertAsync(
+        public virtual async Task SendNewLoginAlertAsync(
             string toEmail,
             string username,
             string ipAddress,
@@ -153,7 +153,7 @@ namespace QUANTM.Services.Auth
             await SendAsync(toEmail, subject, body);
         }
 
-        public async Task SendPasswordChangedByAdminEmailAsync(
+        public virtual async Task SendPasswordChangedByAdminEmailAsync(
             string toEmail,
             string username,
             string adminName)
@@ -171,7 +171,7 @@ namespace QUANTM.Services.Auth
             await SendAsync(toEmail, subject, body);
         }
 
-        public async Task SendRoleChangedEmailAsync(
+        public virtual async Task SendRoleChangedEmailAsync(
             string toEmail,
             string username,
             string oldRole,

@@ -6,7 +6,7 @@ namespace QUANTM.Services.Auth
 {
     public class PasswordPolicyService
     {
-        public ValidationResult ValidatePassword(string password, string username)
+        public virtual ValidationResult ValidatePassword(string password, string username)
         {
             var errors = new List<string>();
 
@@ -49,7 +49,7 @@ namespace QUANTM.Services.Auth
             };
         }
 
-        public int CalculatePasswordStrength(string password)
+        public virtual int CalculatePasswordStrength(string password)
         {
             int strength = 0;
 

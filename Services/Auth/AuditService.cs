@@ -18,7 +18,7 @@ namespace QUANTM.Services.Auth
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task LogAsync(string action, string? entityType = null, int? entityId = null,
+        public virtual async Task LogAsync(string action, string? entityType = null, int? entityId = null,
             object? oldValues = null, object? newValues = null, int? userId = null)
         {
             var httpContext = _httpContextAccessor.HttpContext;

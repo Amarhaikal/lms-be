@@ -16,7 +16,7 @@ namespace QUANTM.Services.Auth
 
         // ENCRYPT: Encrypts text using AES-256
         // Returns: Base64 string containing [IV + CipherText]
-        public string Encrypt(string plainText)
+        public virtual string Encrypt(string plainText)
         {
             if (string.IsNullOrEmpty(plainText))
             {
@@ -45,7 +45,7 @@ namespace QUANTM.Services.Auth
         }
 
         // DECRYPT: Decrypts the Base64 string
-        public string Decrypt(string cipherText)
+        public virtual string Decrypt(string cipherText)
         {
             if (string.IsNullOrEmpty(cipherText)) return cipherText;
             try
@@ -76,7 +76,7 @@ namespace QUANTM.Services.Auth
         }
 
         // HASH: Creates a one-way hash for searching (Deterministic)
-        public string Hash(string text)
+        public virtual string Hash(string text)
         {
             if (string.IsNullOrEmpty(text)) return text;
             using (var sha256 = SHA256.Create())

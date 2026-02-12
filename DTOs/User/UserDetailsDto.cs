@@ -24,7 +24,17 @@ namespace QUANTM.DTOs.User
         [JsonPropertyName("address")]
         public AddressDto? Address { get; set; }
 
-
+        [JsonPropertyName("profile_image_url")]
         public string? ProfileImageUrl { get; set; }
+
+        [JsonPropertyName("created_at")]
+        public DateTime CreatedAt { get; set; }
+        [JsonPropertyName("created_by")]
+        public UserNestedDto? CreatedBy { get; set; }
+
+        [JsonPropertyName("updated_at")]
+        public DateTime? UpdatedAt { get; set; }
+        [JsonPropertyName("updated_by")]
+        public UserNestedDto? UpdatedBy { get; set; }
     }
 }

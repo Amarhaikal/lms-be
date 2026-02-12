@@ -14,7 +14,7 @@ namespace QUANTM.Services.Auth
             _configuration = configuration;
         }
 
-        public (string Token, string Jti) GenerateToken(int userId, string username, int roleId, string roleCode)
+        public virtual (string Token, string Jti) GenerateToken(int userId, string username, int roleId, string roleCode)
         {
             var jwtSettings = _configuration.GetSection("Jwt");
 

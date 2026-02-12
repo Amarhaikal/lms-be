@@ -24,7 +24,12 @@ namespace QUANTM.Mappings
                 .ForMember(dest => dest.ProfileImageUrl, opt => opt.MapFrom((src, dest, destMember, context) =>
                     src.ProfileImageId.HasValue
                         ? $"/api/documents/{src.ProfileImageId}/content"
-                        : null));
+                        : null))
+                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.Creator))
+                .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.Updater));
+
+            CreateMap<User, UserNestedDto>();
+
             CreateMap<Models.Session.Session, QUANTM.DTOs.Session.SessionDto>();
 
             // DTO to Entity mappings
