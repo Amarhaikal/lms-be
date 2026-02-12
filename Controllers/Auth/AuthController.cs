@@ -181,6 +181,9 @@ namespace QUANTM.Controllers.Auth
                 var user = await _context.Users
                     .Include(u => u.Role)
                     .Include(u => u.Status)
+                    .Include(u => u.Gender)
+                    .Include(u => u.Address).ThenInclude(a => a!.Country)
+                    .Include(u => u.Address).ThenInclude(a => a!.State)
                     .FirstOrDefaultAsync(u => u.Username == request.Username || u.Email == request.Username);
 
                 if (user == null)
