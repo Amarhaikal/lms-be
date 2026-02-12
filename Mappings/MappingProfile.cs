@@ -13,7 +13,9 @@ namespace QUANTM.Mappings
         {
             // Entity to DTO mappings
             CreateMap<CodeType, CodeTypeDto>();
-            CreateMap<SystemCode, SystemCodeDto>();
+            CreateMap<SystemCode, SystemCodeDto>()
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt.AddHours(8)))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt.HasValue ? src.UpdatedAt.Value.AddHours(8) : (DateTime?)null));
             CreateMap<SystemCode, SystemCodeNestedDto>();
             CreateMap<Address, AddressDto>();
             CreateMap<User, UserDetailsDto>()
@@ -21,14 +23,14 @@ namespace QUANTM.Mappings
                 .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Gender))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
                 .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt.AddHours(8)))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt.HasValue ? src.UpdatedAt.Value.AddHours(8) : (DateTime?)null))
                 .ForMember(dest => dest.ProfileImageUrl, opt => opt.MapFrom((src, dest, destMember, context) =>
                     src.ProfileImageId.HasValue
                         ? $"/api/documents/{src.ProfileImageId}/content"
                         : null))
-                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.Creator))
-                .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.Updater));
-
-            CreateMap<User, UserNestedDto>();
+                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.Creator != null ? src.Creator.Username : null))
+                .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.Updater != null ? src.Updater.Username : null));
 
             CreateMap<Models.Session.Session, QUANTM.DTOs.Session.SessionDto>();
 

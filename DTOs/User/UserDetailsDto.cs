@@ -30,11 +30,11 @@ namespace QUANTM.DTOs.User
         [JsonPropertyName("created_at")]
         public DateTime CreatedAt { get; set; }
         [JsonPropertyName("created_by")]
-        public UserNestedDto? CreatedBy { get; set; }
+        public string? CreatedBy { get; set; }
 
         [JsonPropertyName("updated_at")]
         public DateTime? UpdatedAt { get; set; }
         [JsonPropertyName("updated_by")]
-        public UserNestedDto? UpdatedBy { get; set; }
+        public string? UpdatedBy { get; set; }
     }
 }
