@@ -15,6 +15,8 @@ namespace QUANTM.DTOs.User
         public string IdNo { get; set; } = null!;
         public string Username { get; set; } = null!;
         public string Email { get; set; } = null!;
+        [JsonPropertyName("phone_no")]
+        public string PhoneNo { get; set; } = null!;
         [JsonPropertyName("status")]
         public SystemCodeNestedDto? Status { get; set; }
         [JsonPropertyName("role")]
