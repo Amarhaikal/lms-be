@@ -74,7 +74,7 @@ namespace QUANTM.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("audit_logs");
+                    b.ToTable("audit_logs", (string)null);
                 });
 
             modelBuilder.Entity("QUANTM.Models.Auth.PasswordHistory", b =>
@@ -103,7 +103,7 @@ namespace QUANTM.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("password_history");
+                    b.ToTable("password_history", (string)null);
                 });
 
             modelBuilder.Entity("QUANTM.Models.Common.Address", b =>
@@ -150,7 +150,7 @@ namespace QUANTM.Migrations
 
                     b.HasIndex("StateId");
 
-                    b.ToTable("addresses");
+                    b.ToTable("addresses", (string)null);
                 });
 
             modelBuilder.Entity("QUANTM.Models.Common.Document", b =>
@@ -215,7 +215,7 @@ namespace QUANTM.Migrations
 
                     b.HasIndex("UpdatedBy");
 
-                    b.ToTable("documents");
+                    b.ToTable("documents", (string)null);
                 });
 
             modelBuilder.Entity("QUANTM.Models.Common.Menu", b =>
@@ -276,7 +276,7 @@ namespace QUANTM.Migrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("menus");
+                    b.ToTable("menus", (string)null);
 
                     b.HasData(
                         new
@@ -366,7 +366,7 @@ namespace QUANTM.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("menu_roles");
+                    b.ToTable("menu_roles", (string)null);
 
                     b.HasData(
                         new
@@ -540,7 +540,7 @@ namespace QUANTM.Migrations
 
                     b.HasIndex("UpdatedBy");
 
-                    b.ToTable("code_types");
+                    b.ToTable("code_types", (string)null);
 
                     b.HasData(
                         new
@@ -629,7 +629,7 @@ namespace QUANTM.Migrations
 
                     b.HasIndex("UpdatedBy");
 
-                    b.ToTable("system_codes");
+                    b.ToTable("system_codes", (string)null);
 
                     b.HasData(
                         new
@@ -842,7 +842,7 @@ namespace QUANTM.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("sessions");
+                    b.ToTable("sessions", (string)null);
                 });
 
             modelBuilder.Entity("QUANTM.Models.User.User", b =>
@@ -992,7 +992,7 @@ namespace QUANTM.Migrations
 
                     b.HasIndex("UpdatedBy");
 
-                    b.ToTable("users");
+                    b.ToTable("users", (string)null);
                 });
 
             modelBuilder.Entity("QUANTM.Models.Auth.PasswordHistory", b =>
