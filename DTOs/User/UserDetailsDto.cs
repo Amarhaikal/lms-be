@@ -13,10 +13,22 @@ namespace QUANTM.DTOs.User
 
         [JsonPropertyName("id_no")]
         public string IdNo { get; set; } = null!;
+        [JsonPropertyName("staff_id")]
+        public string? StaffId { get; set; }
+
         public string Username { get; set; } = null!;
         public string Email { get; set; } = null!;
         [JsonPropertyName("phone_no")]
-        public string PhoneNo { get; set; } = null!;
+        public string? PhoneNo { get; set; }
+
+        [JsonPropertyName("department")]
+        public SystemCodeNestedDto? Department { get; set; }
+
+        [JsonPropertyName("designation")]
+        public string? Designation { get; set; }
+
+        [JsonPropertyName("remarks")]
+        public string? Remarks { get; set; }
         [JsonPropertyName("status")]
         public SystemCodeNestedDto? Status { get; set; }
         [JsonPropertyName("role")]

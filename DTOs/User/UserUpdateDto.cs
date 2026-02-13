@@ -23,8 +23,20 @@ namespace QUANTM.DTOs.User
         [JsonPropertyName("email")]
         public string? Email { get; set; }
 
+        [JsonPropertyName("staff_id")]
+        public string? StaffId { get; set; }
+
         [JsonPropertyName("phone_no")]
         public string? PhoneNo { get; set; }
+
+        [JsonPropertyName("department")]
+        public CodeReferenceDto? Department { get; set; }
+
+        [JsonPropertyName("designation")]
+        public string? Designation { get; set; }
+
+        [JsonPropertyName("remarks")]
+        public string? Remarks { get; set; }
 
         [JsonPropertyName("gender")]
         public CodeReferenceDto? Gender { get; set; }

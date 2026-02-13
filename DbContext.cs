@@ -45,6 +45,12 @@ namespace QUANTM.Data
                 .HasForeignKey(sc => sc.CodeTypeId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Department)
+                .WithMany()
+                .HasForeignKey(u => u.DepartmentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // Configure relationships for MenuRole
             modelBuilder.Entity<MenuRole>()
                 .HasOne(mr => mr.Menu)

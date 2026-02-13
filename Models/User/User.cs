@@ -43,9 +43,26 @@ public class User
     [Required(ErrorMessage = "Password is required")]
     public string Password { get; set; } = null!;
 
+    [Column("staff_id")]
+    [MaxLength(50)]
+    public string? StaffId { get; set; }
+
     [Column("phone_no")]
     [MaxLength(12, ErrorMessage = "Phone number cannot exceed 12 characters")]
     public string? PhoneNo { get; set; }
+
+    [Column("department_id")]
+    public int? DepartmentId { get; set; }
+    [ForeignKey("DepartmentId")]
+    public SystemCode? Department { get; set; }
+
+    [Column("designation")]
+    [MaxLength(100)]
+    public string? Designation { get; set; }
+
+    [Column("remarks")]
+    [MaxLength(255)]
+    public string? Remarks { get; set; }
 
     [Column("gender_id")]
     public int? GenderId { get; set; }

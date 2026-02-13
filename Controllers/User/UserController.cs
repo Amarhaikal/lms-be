@@ -40,7 +40,9 @@ namespace QUANTM.Controllers.User
             {
                 var query = _context.Users
                     .Include(u => u.Role)
+                    // .Include(u => u.Gender)
                     .Include(u => u.Status)
+                    // .Include(u => u.Department)
                     .Include(u => u.Creator)
                     .Include(u => u.Updater)
                     .AsQueryable();
@@ -82,6 +84,7 @@ namespace QUANTM.Controllers.User
                     .Include(u => u.Role)
                     .Include(u => u.Gender)
                     .Include(u => u.Status)
+                    .Include(u => u.Department)
                     .Include(u => u.Address).ThenInclude(a => a!.State)
                     .Include(u => u.Address).ThenInclude(a => a!.Country)
                     .Include(u => u.Creator)
@@ -111,6 +114,7 @@ namespace QUANTM.Controllers.User
                     .Include(u => u.Role)
                     .Include(u => u.Gender)
                     .Include(u => u.Status)
+                    .Include(u => u.Department)
                     .Include(u => u.Address).ThenInclude(a => a!.State)
                     .Include(u => u.Address).ThenInclude(a => a!.Country)
                     .Include(u => u.Creator)
@@ -140,6 +144,7 @@ namespace QUANTM.Controllers.User
                     .Include(u => u.Role)
                     .Include(u => u.Gender)
                     .Include(u => u.Status)
+                    .Include(u => u.Department)
                     .Include(u => u.Address).ThenInclude(a => a!.State)
                     .Include(u => u.Address).ThenInclude(a => a!.Country)
                     .FirstOrDefaultAsync(u => u.Id == id);
@@ -180,6 +185,13 @@ namespace QUANTM.Controllers.User
                     if (status != null) user.StatusId = status.Id;
                 }
 
+                // Handle Department Code Update
+                if (userUpdateDto.Department?.Code != null)
+                {
+                    var dept = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == userUpdateDto.Department.Code);
+                    if (dept != null) user.DepartmentId = dept.Id;
+                }
+
                 // Handle Address Update
                 if (userUpdateDto.Address != null)
                 {
@@ -216,6 +228,7 @@ namespace QUANTM.Controllers.User
                     .Include(u => u.Role)
                     .Include(u => u.Gender)
                     .Include(u => u.Status)
+                    .Include(u => u.Department)
                     .Include(u => u.Address).ThenInclude(a => a!.State)
                     .Include(u => u.Address).ThenInclude(a => a!.Country)
                     .Include(u => u.Creator)
