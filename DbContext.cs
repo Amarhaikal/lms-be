@@ -51,6 +51,42 @@ namespace QUANTM.Data
                 .HasForeignKey(u => u.DepartmentId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Configure Audit relationships for SystemCode
+            modelBuilder.Entity<SystemCode>(entity =>
+            {
+                entity.HasOne(sc => sc.CreatedByUser)
+                    .WithMany()
+                    .HasForeignKey(sc => sc.CreatedBy);
+
+                entity.HasOne(sc => sc.UpdatedByUser)
+                    .WithMany()
+                    .HasForeignKey(sc => sc.UpdatedBy);
+            });
+
+            // Configure Audit relationships for CodeType
+            modelBuilder.Entity<CodeType>(entity =>
+            {
+                entity.HasOne(ct => ct.CreatedByUser)
+                    .WithMany()
+                    .HasForeignKey(ct => ct.CreatedBy);
+
+                entity.HasOne(ct => ct.UpdatedByUser)
+                    .WithMany()
+                    .HasForeignKey(ct => ct.UpdatedBy);
+            });
+
+            // Configure Audit relationships for Document
+            modelBuilder.Entity<Document>(entity =>
+            {
+                entity.HasOne(d => d.CreatedByUser)
+                    .WithMany()
+                    .HasForeignKey(d => d.CreatedBy);
+
+                entity.HasOne(d => d.UpdatedByUser)
+                    .WithMany()
+                    .HasForeignKey(d => d.UpdatedBy);
+            });
+
             // Configure relationships for MenuRole
             modelBuilder.Entity<MenuRole>()
                 .HasOne(mr => mr.Menu)

@@ -218,7 +218,8 @@ namespace QUANTM.Controllers.Parameter
                 }
 
                 var systemCode = _mapper.Map<SystemCode>(body);
-                systemCode.CodeTypeId = body.CodeTypeId;
+                var codeType = await _context.CodeTypes.FirstOrDefaultAsync(x => x.Code == body.CodeTypeCode);
+                systemCode.CodeTypeId = codeType?.Id ?? 0;
                 _context.SystemCodes.Add(systemCode);
                 await _context.SaveChangesAsync();
 

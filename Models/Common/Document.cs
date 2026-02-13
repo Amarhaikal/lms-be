@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
+using UserEntity = QUANTM.Models.User.User;
+
 namespace QUANTM.Models.Common;
 
 [Table("documents")]
@@ -38,6 +40,18 @@ public class Document
     [Column("created_by")]
     public int? CreatedBy { get; set; }
 
+    [ForeignKey("CreatedBy")]
+    public UserEntity? CreatedByUser { get; set; }
+
     [Column("created_at")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    [Column("updated_by")]
+    public int? UpdatedBy { get; set; }
+
+    [ForeignKey("UpdatedBy")]
+    public UserEntity? UpdatedByUser { get; set; }
+
+    [Column("updated_at")]
+    public DateTime? UpdatedAt { get; set; }
 }
