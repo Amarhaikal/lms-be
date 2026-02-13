@@ -32,7 +32,14 @@ namespace QUANTM.Controllers.Parameter
         {
             try
             {
-                var codeType = await _context.CodeTypes.Include(x => x.SystemCodes).ToListAsync();
+                var codeType = await _context.CodeTypes
+                    .Include(x => x.CreatedByUser)
+                    .Include(x => x.UpdatedByUser)
+                    .Include(x => x.SystemCodes)
+                        .ThenInclude(sc => sc.CreatedByUser)
+                    .Include(x => x.SystemCodes)
+                        .ThenInclude(sc => sc.UpdatedByUser)
+                    .ToListAsync();
                 var codeTypeDto = _mapper.Map<List<CodeTypeDto>>(codeType);
                 return CResponseGetListSuccessful(codeTypeDto);
 
@@ -48,7 +55,14 @@ namespace QUANTM.Controllers.Parameter
         {
             try
             {
-                var codeType = await _context.SystemCodes.FindAsync(id);
+                var codeType = await _context.CodeTypes
+                    .Include(x => x.CreatedByUser)
+                    .Include(x => x.UpdatedByUser)
+                    .Include(x => x.SystemCodes)
+                        .ThenInclude(sc => sc.CreatedByUser)
+                    .Include(x => x.SystemCodes)
+                        .ThenInclude(sc => sc.UpdatedByUser)
+                    .FirstOrDefaultAsync(x => x.Id == id);
 
                 if (codeType == null)
                 {
@@ -173,13 +187,19 @@ namespace QUANTM.Controllers.Parameter
             {
                 if (codeTypeId == 0)
                 {
-                    var systemCode = await _context.SystemCodes.ToListAsync();
+                    var systemCode = await _context.SystemCodes
+                        .Include(x => x.CreatedByUser)
+                        .Include(x => x.UpdatedByUser)
+                        .ToListAsync();
                     var systemCodeDto = _mapper.Map<List<SystemCodeDto>>(systemCode);
                     return CResponseGetListSuccessful(systemCodeDto);
                 }
                 else
                 {
-                    var systemCode = await _context.SystemCodes.Where(x => x.CodeTypeId == codeTypeId).ToListAsync();
+                    var systemCode = await _context.SystemCodes
+                        .Include(x => x.CreatedByUser)
+                        .Include(x => x.UpdatedByUser)
+                        .Where(x => x.CodeTypeId == codeTypeId).ToListAsync();
                     _logger.LogInformation("SystemCode: {SystemCode}", JsonSerializer.Serialize(systemCode));
                     if (systemCode.Count == 0)
                     {

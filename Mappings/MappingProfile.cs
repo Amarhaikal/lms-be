@@ -11,11 +11,15 @@ namespace QUANTM.Mappings
     {
         public MappingProfile()
         {
-            // Entity to DTO mappings
-            CreateMap<CodeType, CodeTypeDto>();
+            CreateMap<CodeType, CodeTypeDto>()
+                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedByUser != null ? src.CreatedByUser.Username : null))
+                .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.UpdatedByUser != null ? src.UpdatedByUser.Username : null));
+
             CreateMap<SystemCode, SystemCodeDto>()
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt.AddHours(8)))
-                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt.HasValue ? src.UpdatedAt.Value.AddHours(8) : (DateTime?)null));
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt.HasValue ? src.UpdatedAt.Value.AddHours(8) : (DateTime?)null))
+                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedByUser != null ? src.CreatedByUser.Username : null))
+                .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.UpdatedByUser != null ? src.UpdatedByUser.Username : null));
             CreateMap<SystemCode, SystemCodeNestedDto>();
             CreateMap<Address, AddressDto>();
             CreateMap<User, UserDetailsDto>()
