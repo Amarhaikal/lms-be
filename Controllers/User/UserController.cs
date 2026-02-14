@@ -297,6 +297,14 @@ namespace QUANTM.Controllers.User
                     return StatusCode(403, new { status = 403, message = "You are not authorized to update this user's profile image." });
                 }
 
+                var user = await _context.Users
+                    .Include(u => u.ProfileImage)
+                    .FirstOrDefaultAsync(u => u.Id == userId);
+                if (user == null)
+                {
+                    return CResponseNotFound("User not found");
+                }
+
                 // Validation
                 if (file == null || file.Length == 0)
                 {
@@ -317,12 +325,6 @@ namespace QUANTM.Controllers.User
                 }
 
                 var document = await _documentService.UploadFileAsync(file, userId, "User Profile Image");
-
-                var user = await _context.Users.FindAsync(userId);
-                if (user == null)
-                {
-                    return CResponseUnauthorized("User record not found");
-                }
 
                 user.ProfileImageId = document.Id;
                 await _context.SaveChangesAsync();

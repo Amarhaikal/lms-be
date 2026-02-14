@@ -138,12 +138,12 @@ namespace QUANTM.Controllers.Common
             return Ok(response);
         }
 
-        protected IActionResult CResponseNotFound()
+        protected IActionResult CResponseNotFound(string? message = "Data not found")
         {
             var response = new ApiResponse<string>
             {
                 Status = 404,
-                Message = "Data not found"
+                Message = message ?? "Data not found"
             };
             return NotFound(response);
         }
