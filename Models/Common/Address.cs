@@ -33,8 +33,7 @@ public class Address
     public SystemCode? State { get; set; }
 
     [Column("country_id")]
-    [Required(ErrorMessage = "Country is required")]
-    public int CountryId { get; set; }
+    public int? CountryId { get; set; }
     [ForeignKey("CountryId")]
     public SystemCode? Country { get; set; }
 }

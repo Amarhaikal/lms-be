@@ -165,10 +165,17 @@ namespace QUANTM.Controllers.User
                 }
 
                 // Handle Gender Code Update
-                if (userUpdateDto.Gender?.Code != null)
+                if (userUpdateDto.Gender != null)
                 {
-                    var gender = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == userUpdateDto.Gender.Code);
-                    if (gender != null) user.GenderId = gender.Id;
+                    if (string.IsNullOrEmpty(userUpdateDto.Gender.Code))
+                    {
+                        user.GenderId = null;
+                    }
+                    else
+                    {
+                        var gender = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == userUpdateDto.Gender.Code);
+                        if (gender != null) user.GenderId = gender.Id;
+                    }
                 }
 
                 // Handle Role Code Update
@@ -186,10 +193,17 @@ namespace QUANTM.Controllers.User
                 }
 
                 // Handle Department Code Update
-                if (userUpdateDto.Department?.Code != null)
+                if (userUpdateDto.Department != null)
                 {
-                    var dept = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == userUpdateDto.Department.Code);
-                    if (dept != null) user.DepartmentId = dept.Id;
+                    if (string.IsNullOrEmpty(userUpdateDto.Department.Code))
+                    {
+                        user.DepartmentId = null;
+                    }
+                    else
+                    {
+                        var dept = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == userUpdateDto.Department.Code);
+                        if (dept != null) user.DepartmentId = dept.Id;
+                    }
                 }
 
                 // Handle Address Update
@@ -204,17 +218,31 @@ namespace QUANTM.Controllers.User
                     _mapper.Map(userUpdateDto.Address, user.Address);
 
                     // Resolve Address State Code
-                    if (userUpdateDto.Address.State?.Code != null)
+                    if (userUpdateDto.Address.State != null)
                     {
-                        var state = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == userUpdateDto.Address.State.Code);
-                        if (state != null) user.Address.StateId = state.Id;
+                        if (string.IsNullOrEmpty(userUpdateDto.Address.State.Code))
+                        {
+                            user.Address.StateId = null;
+                        }
+                        else
+                        {
+                            var state = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == userUpdateDto.Address.State.Code);
+                            if (state != null) user.Address.StateId = state.Id;
+                        }
                     }
 
                     // Resolve Address Country Code
-                    if (userUpdateDto.Address.Country?.Code != null)
+                    if (userUpdateDto.Address.Country != null)
                     {
-                        var country = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == userUpdateDto.Address.Country.Code);
-                        if (country != null) user.Address.CountryId = country.Id;
+                        if (string.IsNullOrEmpty(userUpdateDto.Address.Country.Code))
+                        {
+                            user.Address.CountryId = null;
+                        }
+                        else
+                        {
+                            var country = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == userUpdateDto.Address.Country.Code);
+                            if (country != null) user.Address.CountryId = country.Id;
+                        }
                     }
                 }
 

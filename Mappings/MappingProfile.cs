@@ -48,7 +48,10 @@ namespace QUANTM.Mappings
                 .ForMember(dest => dest.Gender, opt => opt.Ignore())
                 .ForMember(dest => dest.Role, opt => opt.Ignore())
                 .ForMember(dest => dest.Status, opt => opt.Ignore())
+                .ForMember(dest => dest.Department, opt => opt.Ignore())
+                .ForMember(dest => dest.Address, opt => opt.Ignore())
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
             CreateMap<AddressUpdateDto, Address>()
                 .ForMember(dest => dest.State, opt => opt.Ignore())
                 .ForMember(dest => dest.Country, opt => opt.Ignore())
