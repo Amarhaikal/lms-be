@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using QUANTM.Controllers.Common;
 using QUANTM.Data;
 using QUANTM.DTOs.User;
+using QUANTM.Model.Common;
 
 namespace QUANTM.Controllers.User
 {
@@ -275,8 +276,8 @@ namespace QUANTM.Controllers.User
         }
 
         [Authorize]
-        [HttpPut("image/{userId}")]
-        public async Task<IActionResult> UpdateUserImage(int userId, IFormFile file)
+        [HttpPut("{id}/photo")]
+        public async Task<IActionResult> UpdateUserImage(int id, IFormFile file)
         {
             try
             {
@@ -289,7 +290,7 @@ namespace QUANTM.Controllers.User
                 }
 
                 // Security Check: Allow if updating own profile OR is Admin/Super Admin
-                bool isSelfUpdate = currentUserId == userId;
+                bool isSelfUpdate = currentUserId == id;
                 bool isAdmin = currentUserRole == "SA" || currentUserRole == "ADM";
 
                 if (!isSelfUpdate && !isAdmin)
@@ -299,7 +300,7 @@ namespace QUANTM.Controllers.User
 
                 var user = await _context.Users
                     .Include(u => u.ProfileImage)
-                    .FirstOrDefaultAsync(u => u.Id == userId);
+                    .FirstOrDefaultAsync(u => u.Id == id);
                 if (user == null)
                 {
                     return CResponseNotFound("User not found");
@@ -324,7 +325,7 @@ namespace QUANTM.Controllers.User
                     return CResponseBadRequest("File size cannot exceed 5MB.");
                 }
 
-                var document = await _documentService.UploadFileAsync(file, userId, "User Profile Image");
+                var document = await _documentService.UploadFileAsync(file, id, "User Profile Image");
 
                 user.ProfileImageId = document.Id;
                 await _context.SaveChangesAsync();
@@ -334,6 +335,53 @@ namespace QUANTM.Controllers.User
             catch (ArgumentException ex)
             {
                 return CResponseBadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return CResponseException(ex.Message);
+            }
+        }
+
+        [Authorize]
+        [HttpDelete("{id}/photo")]
+        public async Task<IActionResult> DeleteUserImage(int id)
+        {
+            try
+            {
+                var currentUserIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var currentUserRole = User.FindFirst(ClaimTypes.Role)?.Value;
+
+                if (string.IsNullOrEmpty(currentUserIdStr) || !int.TryParse(currentUserIdStr, out int currentUserId))
+                {
+                    return CResponseUnauthorized("User not found");
+                }
+
+                // Security Check: Allow if deleting own profile OR is Admin/Super Admin
+                bool isSelfUpdate = currentUserId == id;
+                bool isAdmin = currentUserRole == "SA" || currentUserRole == "ADM";
+
+                if (!isSelfUpdate && !isAdmin)
+                {
+                    return StatusCode(403, new { status = 403, message = "You are not authorized to delete this user's profile image." });
+                }
+
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+                if (user == null)
+                {
+                    return CResponseNotFound("User not found");
+                }
+
+                if (user.ProfileImageId.HasValue)
+                {
+                    var documentId = user.ProfileImageId.Value;
+                    user.ProfileImageId = null;
+                    await _context.SaveChangesAsync();
+
+                    // Optional: Clean up the document record and physical file
+                    await _documentService.DeleteFileAsync(documentId);
+                }
+
+                return CResponseDeleteSuccessful();
             }
             catch (Exception ex)
             {
@@ -389,6 +437,34 @@ namespace QUANTM.Controllers.User
                 return CResponseException(ex.Message);
             }
 
+        }
+
+        [HttpGet("check-username/{username}")]
+        public async Task<IActionResult> checkUsernameAvailability([FromRoute] string? username)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(username))
+                {
+                    return CResponseGetSuccessful(new { available = false });
+                }
+
+                _logger.LogInformation("Checking username availability for {Username}", username);
+
+                var exists = await _context.Users
+                    .AnyAsync(u => u.Username.ToLower() == username.ToLower());
+
+                _logger.LogInformation("Username {Username} exists: {Exists}", username, exists);
+
+                return CResponseGetSuccessful(new
+                {
+                    available = !exists
+                });
+            }
+            catch (Exception ex)
+            {
+                return CResponseException(ex.Message);
+            }
         }
     }
 }
