@@ -47,19 +47,31 @@ namespace QUANTM.Controllers.User
                     .Include(u => u.Creator)
                     .Include(u => u.Updater)
                     .AsQueryable();
-                if (!string.IsNullOrEmpty(userListParamsDto.Fullname))
+
+                if (!string.IsNullOrWhiteSpace(userListParamsDto.Fullname))
                 {
                     query = query.Where(u => u.Fullname.Contains(userListParamsDto.Fullname));
                 }
-                if (!string.IsNullOrEmpty(userListParamsDto.Username))
+
+                if (!string.IsNullOrWhiteSpace(userListParamsDto.Username))
                 {
                     query = query.Where(u => u.Username.Contains(userListParamsDto.Username));
                 }
-                if (!string.IsNullOrEmpty(userListParamsDto.RoleCode))
+
+                if (!string.IsNullOrWhiteSpace(userListParamsDto.Role))
                 {
-                    query = query.Where(u => u.Role != null && u.Role.Code == userListParamsDto.RoleCode);
+                    query = query.Where(u => u.Role != null && u.Role.Code == userListParamsDto.Role);
                 }
-                var users = await query.Skip((userListParamsDto.PageNo - 1) * userListParamsDto.PageSize).Take(userListParamsDto.PageSize).ToListAsync();
+
+                // Get total count before pagination
+                var totalCount = await query.CountAsync();
+
+                // Apply pagination
+                var users = await query
+                    .Skip((userListParamsDto.PageNo - 1) * userListParamsDto.PageSize)
+                    .Take(userListParamsDto.PageSize)
+                    .ToListAsync();
+
                 var userDtos = _mapper.Map<List<UserDetailsDto>>(users);
 
                 foreach (var userDto in userDtos)
@@ -67,7 +79,7 @@ namespace QUANTM.Controllers.User
                     userDto.IdNo = _encryptionService.Decrypt(userDto.IdNo);
                 }
 
-                return CResponseGetListSuccessful(userDtos, users.Count, userListParamsDto.PageNo, userListParamsDto.PageSize);
+                return CResponseGetListSuccessful(userDtos, totalCount, userListParamsDto.PageNo, userListParamsDto.PageSize);
             }
             catch (Exception ex)
             {
