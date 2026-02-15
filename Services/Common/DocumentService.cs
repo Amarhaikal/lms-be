@@ -74,4 +74,19 @@ public class DocumentService : IDocumentService
         var fileData = await File.ReadAllBytesAsync(document.FilePath);
         return (fileData, document.ContentType ?? "application/octet-stream", document.FileName);
     }
+
+    public async Task DeleteFileAsync(int documentId)
+    {
+        var document = await _context.Documents.FindAsync(documentId);
+        if (document != null)
+        {
+            if (File.Exists(document.FilePath))
+            {
+                File.Delete(document.FilePath);
+            }
+
+            _context.Documents.Remove(document);
+            await _context.SaveChangesAsync();
+        }
+    }
 }
