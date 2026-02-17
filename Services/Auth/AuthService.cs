@@ -105,6 +105,8 @@ namespace QUANTM.Services.Auth
                 }
                 var gender = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == genderCode);
 
+                var role = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == request.RoleCode);
+
                 var newUser = new User
                 {
                     Fullname = request.Fullname,
@@ -114,7 +116,7 @@ namespace QUANTM.Services.Auth
                     Email = request.Email,
                     Password = hashedPassword,
                     PasswordChangedAt = DateTime.UtcNow,
-                    RoleId = request.RoleId,
+                    RoleId = role?.Id ?? 0,
                     StatusId = statusNewUser?.Id ?? 0,
                     GenderId = gender?.Id,
                     CreatedBy = _identityService.GetUserId(),

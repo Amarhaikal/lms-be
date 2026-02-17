@@ -29,8 +29,8 @@ namespace QUANTM.DTOs.Auth
         public string Password { get; set; } = null!;
 
         [Required]
-        [JsonPropertyName("role_id")]
-        public int RoleId { get; set; }
+        [JsonPropertyName("role_code")]
+        public string RoleCode { get; set; } = null!;
     }
 }
 
