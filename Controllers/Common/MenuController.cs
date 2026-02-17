@@ -31,7 +31,7 @@ namespace QUANTM.Controllers.Common
                 var menus = await _context.MenuRoles
                     .Where(mr => mr.Role.Code == roleCode)
                     .Select(mr => mr.Menu)
-                    .OrderBy(m => m.Id)
+                    .OrderBy(m => m.SortOrder)
                     .ToListAsync();
 
                 // Build hierarchy
@@ -42,7 +42,7 @@ namespace QUANTM.Controllers.Common
                     Code = m.Code,
                     Url = m.Url,
                     Icon = m.Icon,
-                    ParentId = m.ParentId
+                    ParentId = m.ParentId,
                 }).ToList();
 
                 var menuMap = menuDtos.ToDictionary(m => m.Id);

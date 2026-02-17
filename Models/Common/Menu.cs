@@ -32,6 +32,9 @@ public class Menu
     [ForeignKey("ParentId")]
     public Menu? Parent { get; set; }
 
+    [Column("sort_order")]
+    public int SortOrder { get; set; } = 0;
+
     [Column("created_by")]
     public int? CreatedBy { get; set; }
 
