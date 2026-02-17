@@ -157,7 +157,7 @@ namespace QUANTM.Data
                 {
                     Id = 1,
                     CodeTypeId = 1,
-                    Code = "ACTIVE",
+                    Code = "A",
                     Description = "Active",
                     CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
                 },
@@ -165,7 +165,7 @@ namespace QUANTM.Data
                 {
                     Id = 2,
                     CodeTypeId = 1,
-                    Code = "INACTIVE",
+                    Code = "I",
                     Description = "Inactive",
                     CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
                 },
@@ -173,7 +173,7 @@ namespace QUANTM.Data
                 {
                     Id = 3,
                     CodeTypeId = 1,
-                    Code = "SUSPENDED",
+                    Code = "S",
                     Description = "Suspended",
                     CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
                 },
@@ -181,7 +181,7 @@ namespace QUANTM.Data
                 {
                     Id = 4,
                     CodeTypeId = 1,
-                    Code = "NEW",
+                    Code = "N",
                     Description = "New",
                     CreatedAt = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc)
                 },
