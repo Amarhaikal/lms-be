@@ -293,6 +293,12 @@ namespace QUANTM.Controllers.User
         {
             try
             {
+                var userId = _identityService.GetUserId();
+                if (userId == id)
+                {
+                    return CResponseBadRequest("You cannot delete yourself.");
+                }
+
                 var user = await _context.Users.FindAsync(id);
                 if (user == null)
                 {
