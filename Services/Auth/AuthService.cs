@@ -90,7 +90,7 @@ namespace QUANTM.Services.Auth
                 }
 
                 var hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
-                var statusNewUser = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == "NEW");
+                var statusNewUser = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == "N");
 
                 // Determine gender from last character of IdNo
                 string genderCode = "M"; // Default to Male
@@ -179,7 +179,7 @@ namespace QUANTM.Services.Auth
                 var deviceType = GetDeviceType(userAgent);
 
                 // Check if account is suspended
-                if (user.Status?.Code == "SUSPENDED")
+                if (user.Status?.Code == "S")
                 {
                     return new ApiResponse<LoginResponseData> { Status = 401, Message = "Account has been suspended. Please contact administrator." };
                 }
@@ -199,7 +199,7 @@ namespace QUANTM.Services.Auth
 
                     if (user.FailedLoginAttempts >= 5)
                     {
-                        var suspendedStatus = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == "SUSPENDED");
+                        var suspendedStatus = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == "S");
                         if (suspendedStatus != null)
                         {
                             var oldStatusId = user.StatusId;
@@ -208,7 +208,7 @@ namespace QUANTM.Services.Auth
 
                             await _auditService.LogAsync("ACCOUNT_SUSPENDED", "User", user.Id,
                                 oldValues: new { StatusId = oldStatusId, StatusCode = user.Status?.Code },
-                                newValues: new { StatusId = suspendedStatus.Id, StatusCode = "SUSPENDED" },
+                                newValues: new { StatusId = suspendedStatus.Id, StatusCode = "S" },
                                 userId: user.Id);
 
                             _ = Task.Run(async () =>
@@ -282,6 +282,26 @@ namespace QUANTM.Services.Auth
 
                 _context.Sessions.Add(newSession);
                 await _context.SaveChangesAsync();
+
+                // Transition NEW user to ACTIVE on first login
+                if (user.Status?.Code == "N")
+                {
+                    var statusActive = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == "A");
+                    if (statusActive != null)
+                    {
+                        var oldStatusId = user.StatusId;
+                        var oldStatusCode = user.Status.Code;
+
+                        user.StatusId = statusActive.Id;
+                        await _context.SaveChangesAsync();
+
+                        // Log audit for status transition
+                        await _auditService.LogAsync("USER_ACTIVATED", "User", user.Id,
+                            oldValues: new { StatusId = oldStatusId, StatusCode = oldStatusCode },
+                            newValues: new { StatusId = statusActive.Id, StatusCode = "A" },
+                            userId: user.Id);
+                    }
+                }
 
                 // Log audit
                 await _auditService.LogAsync("USER_LOGIN", "User", user.Id, userId: user.Id);
