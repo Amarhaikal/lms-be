@@ -288,6 +288,29 @@ namespace QUANTM.Controllers.User
         }
 
         [Authorize]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            try
+            {
+                var user = await _context.Users.FindAsync(id);
+                if (user == null)
+                {
+                    return CResponseNotFound();
+                }
+
+                _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
+
+                return CResponseDeleteSuccessful();
+            }
+            catch (Exception ex)
+            {
+                return CResponseException(ex.Message);
+            }
+        }
+
+        [Authorize]
         [HttpPut("{id}/photo")]
         public async Task<IActionResult> UpdateUserImage(int id, IFormFile file)
         {
