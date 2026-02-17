@@ -72,7 +72,7 @@ namespace QUANTM.Controllers.User
                     .Take(userListParamsDto.PageSize)
                     .ToListAsync();
 
-                var userDtos = _mapper.Map<List<UserDetailsDto>>(users);
+                var userDtos = _mapper.Map<List<UserListDto>>(users);
 
                 foreach (var userDto in userDtos)
                 {
