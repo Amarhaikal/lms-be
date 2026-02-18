@@ -8,6 +8,7 @@ using QUANTM.Models.Parameter;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using QUANTM.Services.Auth;
 
 namespace QUANTM.Controllers.Parameter
 {
@@ -19,12 +20,14 @@ namespace QUANTM.Controllers.Parameter
         private readonly ILogger<ParameterController> _logger;
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IdentityService _identityService;
 
-        public ParameterController(ILogger<ParameterController> logger, ApplicationDbContext context, IMapper mapper)
+        public ParameterController(ILogger<ParameterController> logger, ApplicationDbContext context, IMapper mapper, IdentityService identityService)
         {
             _logger = logger;
             _context = context;
             _mapper = mapper;
+            _identityService = identityService;
         }
 
         [HttpGet("codeType")]
@@ -235,8 +238,8 @@ namespace QUANTM.Controllers.Parameter
                     return CResponseInvalidDataToSave();
                 }
 
-                var isSystemCodeExist = await _context.SystemCodes.AnyAsync(x => x.Code == body.Code);
-                if (isSystemCodeExist)
+                var isSystemCodeInSameCodeTypeExist = await _context.SystemCodes.AnyAsync(x => x.Code == body.Code && x.CodeType != null && x.CodeType.Code == body.CodeTypeCode);
+                if (isSystemCodeInSameCodeTypeExist)
                 {
                     var response = new ApiResponse<string>
                     {
@@ -249,6 +252,8 @@ namespace QUANTM.Controllers.Parameter
                 var systemCode = _mapper.Map<SystemCode>(body);
                 var codeType = await _context.CodeTypes.FirstOrDefaultAsync(x => x.Code == body.CodeTypeCode);
                 systemCode.CodeTypeId = codeType?.Id ?? 0;
+                systemCode.CreatedAt = DateTime.UtcNow;
+                systemCode.CreatedBy = _identityService.GetUserId();
                 _context.SystemCodes.Add(systemCode);
                 await _context.SaveChangesAsync();
 
