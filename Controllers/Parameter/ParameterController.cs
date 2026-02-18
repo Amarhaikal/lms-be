@@ -181,33 +181,42 @@ namespace QUANTM.Controllers.Parameter
         }
 
         [HttpGet("systemCode")]
-        public async Task<IActionResult> GetSystemCode(int codeTypeId)
+        public async Task<IActionResult> GetSystemCode([FromQuery] SystemCodeListParamsDto systemCodeListParamsDto)
         {
             try
             {
-                if (codeTypeId == 0)
+                var query = _context.SystemCodes.AsQueryable();
+
+                if (!string.IsNullOrEmpty(systemCodeListParamsDto.CodeTypeCode))
                 {
-                    var systemCode = await _context.SystemCodes
-                        .Include(x => x.CreatedByUser)
-                        .Include(x => x.UpdatedByUser)
-                        .ToListAsync();
-                    var systemCodeDto = _mapper.Map<List<SystemCodeDto>>(systemCode);
-                    return CResponseGetListSuccessful(systemCodeDto);
+                    query = query.Where(x => x.CodeType != null && x.CodeType.Code == systemCodeListParamsDto.CodeTypeCode);
                 }
-                else
+
+                if (!string.IsNullOrEmpty(systemCodeListParamsDto.Code))
                 {
-                    var systemCode = await _context.SystemCodes
-                        .Include(x => x.CreatedByUser)
-                        .Include(x => x.UpdatedByUser)
-                        .Where(x => x.CodeTypeId == codeTypeId).ToListAsync();
-                    _logger.LogInformation("SystemCode: {SystemCode}", JsonSerializer.Serialize(systemCode));
-                    if (systemCode.Count == 0)
-                    {
-                        return CResponseNotFound();
-                    }
-                    var systemCodeDto = _mapper.Map<List<SystemCodeDto>>(systemCode);
-                    return CResponseGetListSuccessful(systemCodeDto);
+                    query = query.Where(x => x.Code != null && x.Code.Contains(systemCodeListParamsDto.Code));
                 }
+
+                if (!string.IsNullOrEmpty(systemCodeListParamsDto.Description))
+                {
+                    query = query.Where(x => x.Description != null && x.Description.Contains(systemCodeListParamsDto.Description));
+                }
+
+                // Get total count before pagination
+                var totalCount = await query.CountAsync();
+
+                // Apply pagination
+                var systemCodes = await query
+                    .Include(x => x.CreatedByUser)
+                    .Include(x => x.UpdatedByUser)
+                    .Include(x => x.CodeType)
+                    .Skip((systemCodeListParamsDto.PageNo - 1) * systemCodeListParamsDto.PageSize)
+                    .Take(systemCodeListParamsDto.PageSize)
+                    .ToListAsync();
+
+                var systemCodeDto = _mapper.Map<List<SystemCodeDto>>(systemCodes);
+
+                return CResponseGetListSuccessful(systemCodeDto, totalCount, systemCodeListParamsDto.PageNo, systemCodeListParamsDto.PageSize);
             }
             catch (Exception ex)
             {

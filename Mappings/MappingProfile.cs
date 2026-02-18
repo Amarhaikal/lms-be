@@ -12,15 +12,20 @@ namespace QUANTM.Mappings
         public MappingProfile()
         {
             CreateMap<CodeType, CodeTypeDto>()
-                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedByUser != null ? src.CreatedByUser.Username : null))
-                .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.UpdatedByUser != null ? src.UpdatedByUser.Username : null));
-
-            CreateMap<SystemCode, SystemCodeDto>()
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt.AddHours(8)))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt.HasValue ? src.UpdatedAt.Value.AddHours(8) : (DateTime?)null))
                 .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedByUser != null ? src.CreatedByUser.Username : null))
                 .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.UpdatedByUser != null ? src.UpdatedByUser.Username : null));
+
+            CreateMap<CodeType, CodeTypeNestedDto>();
             CreateMap<SystemCode, SystemCodeNestedDto>();
+
+            CreateMap<SystemCode, SystemCodeDto>()
+                .ForMember(dest => dest.CodeType, opt => opt.MapFrom(src => src.CodeType))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt.AddHours(8)))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt.HasValue ? src.UpdatedAt.Value.AddHours(8) : (DateTime?)null))
+                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedByUser != null ? src.CreatedByUser.Username : null))
+                .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.UpdatedByUser != null ? src.UpdatedByUser.Username : null));
             CreateMap<Address, AddressDto>();
             CreateMap<User, UserDetailsDto>()
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role))
