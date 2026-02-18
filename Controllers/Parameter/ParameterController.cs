@@ -333,7 +333,7 @@ namespace QUANTM.Controllers.Parameter
         {
             try
             {
-                if (!ModelState.IsValid)
+                if (body == null || !ModelState.IsValid)
                 {
                     return CResponseInvalidDataToSave();
                 }
@@ -344,11 +344,11 @@ namespace QUANTM.Controllers.Parameter
                     return CResponseNotFound();
                 }
 
-                // Validate that CodeTypeId exists if it's being changed
-                if (body.CodeTypeId != 0 && body.CodeTypeId != systemCode.CodeTypeId)
+                // If CodeTypeCode is provided, look up the CodeType and update CodeTypeId
+                if (!string.IsNullOrEmpty(body.CodeTypeCode))
                 {
-                    var codeTypeExists = await _context.CodeTypes.AnyAsync(x => x.Id == body.CodeTypeId);
-                    if (!codeTypeExists)
+                    var codeType = await _context.CodeTypes.FirstOrDefaultAsync(x => x.Code == body.CodeTypeCode);
+                    if (codeType == null)
                     {
                         var response = new ApiResponse<string>
                         {
@@ -357,22 +357,25 @@ namespace QUANTM.Controllers.Parameter
                         };
                         return BadRequest(response);
                     }
+                    systemCode.CodeTypeId = codeType.Id;
                 }
-
-                // log systemCode using logger
-                _logger.LogInformation("Old SystemCode: {SystemCode}", JsonSerializer.Serialize(systemCode));
 
                 systemCode.Code = body.Code ?? systemCode.Code;
                 systemCode.Description = body.Description ?? systemCode.Description;
 
-                // Only update CodeTypeId if a valid one is provided
-                if (body.CodeTypeId != 0)
+                var isSystemCodeInSameCodeTypeExist = await _context.SystemCodes.AnyAsync(x => x.Id != id && x.Code == systemCode.Code && x.CodeTypeId == systemCode.CodeTypeId);
+                if (isSystemCodeInSameCodeTypeExist)
                 {
-                    systemCode.CodeTypeId = body.CodeTypeId;
+                    var response = new ApiResponse<string>
+                    {
+                        Status = 400,
+                        Message = "System code already exists"
+                    };
+                    return BadRequest(response);
                 }
 
-                // log systemCode using logger
-                _logger.LogInformation("New SystemCode: {SystemCode}", JsonSerializer.Serialize(systemCode));
+                systemCode.UpdatedAt = DateTime.UtcNow;
+                systemCode.UpdatedBy = _identityService.GetUserId();
 
                 await _context.SaveChangesAsync();
 
