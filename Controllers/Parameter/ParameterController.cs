@@ -238,6 +238,17 @@ namespace QUANTM.Controllers.Parameter
                     return CResponseInvalidDataToSave();
                 }
 
+                var codeType = await _context.CodeTypes.FirstOrDefaultAsync(x => x.Code == body.CodeTypeCode);
+                if (codeType == null)
+                {
+                    var response = new ApiResponse<string>
+                    {
+                        Status = 400,
+                        Message = "Code type does not exist"
+                    };
+                    return BadRequest(response);
+                }
+
                 var isSystemCodeInSameCodeTypeExist = await _context.SystemCodes.AnyAsync(x => x.Code == body.Code && x.CodeType != null && x.CodeType.Code == body.CodeTypeCode);
                 if (isSystemCodeInSameCodeTypeExist)
                 {
@@ -250,7 +261,6 @@ namespace QUANTM.Controllers.Parameter
                 }
 
                 var systemCode = _mapper.Map<SystemCode>(body);
-                var codeType = await _context.CodeTypes.FirstOrDefaultAsync(x => x.Code == body.CodeTypeCode);
                 systemCode.CodeTypeId = codeType?.Id ?? 0;
                 systemCode.CreatedAt = DateTime.UtcNow;
                 systemCode.CreatedBy = _identityService.GetUserId();
