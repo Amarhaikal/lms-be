@@ -277,52 +277,57 @@ namespace QUANTM.Controllers.Parameter
         }
 
         [Authorize(Roles = "ADM,SA")]
-        [HttpPost("systemCode/list")]
+        [HttpPost("systemCodes")]
         public async Task<IActionResult> CreateSystemCodes([FromBody] List<SystemCodeCreateDto> body)
         {
             try
             {
-                if (!ModelState.IsValid || body == null || !body.Any())
+                if (body == null || !body.Any() || !ModelState.IsValid)
                 {
                     return CResponseInvalidDataToSave();
                 }
 
-                // Check for duplicates in the input list
-                var inputCodes = body.Select(x => x.Code).ToList();
-                if (inputCodes.Count != inputCodes.Distinct().Count())
-                {
-                    var response = new ApiResponse<string>
-                    {
-                        Status = 400,
-                        Message = "Duplicate codes in the input list"
-                    };
-                    return BadRequest(response);
-                }
+                // Get unique code types from body
+                var requestedCodeTypes = body.Select(b => b.CodeTypeCode).Distinct().ToList();
 
-                // Check for existing codes in DB
-                var existingCodes = await _context.SystemCodes
-                    .Where(x => inputCodes.Contains(x.Code))
-                    .Select(x => x.Code)
+                // Fetch all matching code types from DB
+                var codeTypes = await _context.CodeTypes
+                    .Where(ct => requestedCodeTypes.Contains(ct.Code))
                     .ToListAsync();
 
-                if (existingCodes.Any())
+                // Validate all code types exist
+                if (codeTypes.Count != requestedCodeTypes.Count)
                 {
-                    var response = new ApiResponse<string>
-                    {
-                        Status = 400,
-                        Message = $"System codes already exist: {string.Join(", ", existingCodes)}"
-                    };
-                    return BadRequest(response);
+                    var missingTypes = requestedCodeTypes.Except(codeTypes.Select(ct => ct.Code)).ToList();
+                    return CResponseException($"The following code types do not exist: {string.Join(", ", missingTypes)}");
                 }
 
-                var systemCodes = _mapper.Map<List<SystemCode>>(body);
+                var codeTypeMap = codeTypes.ToDictionary(ct => ct.Code, ct => ct.Id);
 
-                // Set audit fields for all new records
-                var currentTime = DateTime.UtcNow;
-                foreach (var systemCode in systemCodes)
+                // Check for duplicates in the database
+                foreach (var item in body)
                 {
-                    systemCode.CreatedAt = currentTime;
-                    systemCode.CreatedBy = null; // Set to current user ID if available from auth context
+                    var isExist = await _context.SystemCodes.AnyAsync(x =>
+                        x.Code == item.Code &&
+                        x.CodeTypeId == codeTypeMap[item.CodeTypeCode]);
+
+                    if (isExist)
+                    {
+                        return CResponseException($"System code '{item.Code}' already exists for code type '{item.CodeTypeCode}'");
+                    }
+                }
+
+                var systemCodes = new List<SystemCode>();
+                var currentUserId = _identityService.GetUserId();
+                var now = DateTime.UtcNow;
+
+                foreach (var item in body)
+                {
+                    var systemCode = _mapper.Map<SystemCode>(item);
+                    systemCode.CodeTypeId = codeTypeMap[item.CodeTypeCode];
+                    systemCode.CreatedAt = now;
+                    systemCode.CreatedBy = currentUserId;
+                    systemCodes.Add(systemCode);
                 }
 
                 _context.SystemCodes.AddRange(systemCodes);
@@ -399,82 +404,100 @@ namespace QUANTM.Controllers.Parameter
         }
 
         [Authorize(Roles = "ADM,SA")]
-        [HttpPut("systemCode/list")]
+        [HttpPut("systemCodes")]
         public async Task<IActionResult> UpdateSystemCodes([FromBody] List<SystemCodeBatchUpdateDto> body)
         {
             try
             {
-                if (!ModelState.IsValid || body == null || !body.Any())
+                if (body == null || !body.Any() || !ModelState.IsValid)
                 {
                     return CResponseInvalidDataToSave();
                 }
 
-                // Validate IDs are unique in the request
                 var inputIds = body.Select(x => x.Id).ToList();
                 if (inputIds.Count != inputIds.Distinct().Count())
                 {
-                    var response = new ApiResponse<string>
-                    {
-                        Status = 400,
-                        Message = "Duplicate IDs in input list"
-                    };
-                    return BadRequest(response);
+                    return CResponseException("Duplicate IDs in input list");
                 }
 
                 // Fetch existing entities
                 var systemCodes = await _context.SystemCodes.Where(x => inputIds.Contains(x.Id)).ToListAsync();
-
-                // Validate all requested IDs found
                 if (systemCodes.Count != inputIds.Count)
                 {
                     var foundIds = systemCodes.Select(x => x.Id).ToList();
                     var missingIds = inputIds.Except(foundIds);
-                    var response = new ApiResponse<string>
-                    {
-                        Status = 404,
-                        Message = $"System codes not found: {string.Join(", ", missingIds)}"
-                    };
-                    return NotFound(response);
+                    return CResponseException($"System codes not found: {string.Join(", ", missingIds)}");
                 }
 
-                // Update Logic
-                var currentTime = DateTime.UtcNow;
-                foreach (var systemCode in systemCodes)
-                {
-                    var dto = body.First(x => x.Id == systemCode.Id);
+                // Handle CodeTypeCode lookups if any are provided
+                var requestedCodeTypes = body
+                    .Where(b => !string.IsNullOrEmpty(b.CodeTypeCode))
+                    .Select(b => b.CodeTypeCode!)
+                    .Distinct()
+                    .ToList();
 
-                    // Optional: Check uniqueness if Code is changing
-                    // This is expensive in a loop or needs a complex query.
-                    // Assuming for now user won't create conflicts in batch update heavily, 
-                    // or better, fetch all codes and check in memory if list is small. 
-                    // But for strict checks:
-                    if (dto.Code != null && dto.Code != systemCode.Code)
+                Dictionary<string, int> codeTypeMap = new();
+                if (requestedCodeTypes.Any())
+                {
+                    var codeTypes = await _context.CodeTypes
+                        .Where(ct => requestedCodeTypes.Contains(ct.Code))
+                        .ToListAsync();
+
+                    if (codeTypes.Count != requestedCodeTypes.Count)
                     {
-                        var isCodeExists = await _context.SystemCodes.AnyAsync(x => x.Code == dto.Code && x.Id != dto.Id);
-                        if (isCodeExists)
-                        {
-                            var response = new ApiResponse<string>
-                            {
-                                Status = 400,
-                                Message = $"System code '{dto.Code}' already exists"
-                            };
-                            return BadRequest(response);
-                        }
+                        var missingTypes = requestedCodeTypes.Except(codeTypes.Select(ct => ct.Code)).ToList();
+                        return CResponseException($"The following code types do not exist: {string.Join(", ", missingTypes)}");
+                    }
+                    codeTypeMap = codeTypes.ToDictionary(ct => ct.Code, ct => ct.Id);
+                }
+
+                var currentUserId = _identityService.GetUserId();
+                var now = DateTime.UtcNow;
+
+                // Validate duplicates in batch and DB
+                foreach (var dto in body)
+                {
+                    var entity = systemCodes.First(x => x.Id == dto.Id);
+
+                    var newCode = dto.Code ?? entity.Code;
+                    var newCodeTypeId = !string.IsNullOrEmpty(dto.CodeTypeCode)
+                        ? codeTypeMap[dto.CodeTypeCode]
+                        : entity.CodeTypeId;
+
+                    // Check for duplicates in DB (excluding current ID)
+                    var isExistInDb = await _context.SystemCodes.AnyAsync(x =>
+                        x.Id != dto.Id &&
+                        x.Code == newCode &&
+                        x.CodeTypeId == newCodeTypeId);
+
+                    if (isExistInDb)
+                    {
+                        return CResponseException($"System code '{newCode}' already exists for the target code type");
                     }
 
-                    systemCode.Code = dto.Code ?? systemCode.Code;
-                    systemCode.Description = dto.Description ?? systemCode.Description;
+                    // Check for duplicates within the current batch
+                    var isDuplicateInBatch = body.Any(b =>
+                        b.Id != dto.Id &&
+                        (b.Code ?? systemCodes.First(s => s.Id == b.Id).Code) == newCode &&
+                        (!string.IsNullOrEmpty(b.CodeTypeCode) ? codeTypeMap[b.CodeTypeCode] : systemCodes.First(s => s.Id == b.Id).CodeTypeId) == newCodeTypeId);
 
-                    // Set audit fields
-                    systemCode.UpdatedAt = currentTime;
-                    systemCode.UpdatedBy = null; // Set to current user ID if available from auth context
+                    if (isDuplicateInBatch)
+                    {
+                        return CResponseException($"Duplicate system code '{newCode}' found within the request batch");
+                    }
+
+                    // Apply updates
+                    entity.Code = dto.Code ?? entity.Code;
+                    entity.Description = dto.Description ?? entity.Description;
+                    entity.CodeTypeId = newCodeTypeId;
+                    entity.UpdatedAt = now;
+                    entity.UpdatedBy = currentUserId;
                 }
 
                 await _context.SaveChangesAsync();
 
                 var systemCodesDto = _mapper.Map<List<SystemCodeDto>>(systemCodes);
                 return CResponseUpdateSuccessful(systemCodesDto);
-
             }
             catch (Exception ex)
             {
@@ -505,6 +528,35 @@ namespace QUANTM.Controllers.Parameter
             }
         }
 
+        [Authorize(Roles = "ADM,SA")]
+        [HttpPost("systemCodes/delete")]
+        public async Task<IActionResult> DeleteSystemCodes([FromBody] List<int> ids)
+        {
+            try
+            {
+                if (ids == null || !ids.Any())
+                {
+                    return CResponseInvalidDataToSave();
+                }
+
+                var systemCodes = await _context.SystemCodes.Where(x => ids.Contains(x.Id)).ToListAsync();
+                if (systemCodes.Count != ids.Distinct().Count())
+                {
+                    var foundIds = systemCodes.Select(x => x.Id).ToList();
+                    var missingIds = ids.Except(foundIds);
+                    return CResponseException($"System codes not found: {string.Join(", ", missingIds)}");
+                }
+
+                _context.SystemCodes.RemoveRange(systemCodes);
+                await _context.SaveChangesAsync();
+
+                return CResponseDeleteSuccessful();
+            }
+            catch (Exception ex)
+            {
+                return CResponseException(ex.Message);
+            }
+        }
 
     }
 }
