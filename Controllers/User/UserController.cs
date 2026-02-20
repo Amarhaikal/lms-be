@@ -61,6 +61,11 @@ namespace QUANTM.Controllers.User
                     query = query.Where(u => u.Role != null && u.Role.Code == userListParamsDto.Role);
                 }
 
+                if (!string.IsNullOrWhiteSpace(userListParamsDto.Status))
+                {
+                    query = query.Where(u => u.Status != null && u.Status.Code == userListParamsDto.Status);
+                }
+
                 // Get total count before pagination
                 var totalCount = await query.CountAsync();
 

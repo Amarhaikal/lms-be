@@ -17,6 +17,10 @@ namespace QUANTM.DTOs.User
         [JsonPropertyName("role")]
         public string? Role { get; set; }
 
+        [FromQuery(Name = "status")]
+        [JsonPropertyName("status")]
+        public string? Status { get; set; }
+
         [FromQuery(Name = "page_no")]
         [JsonPropertyName("page_no")]
         public int PageNo { get; set; } = 1;
