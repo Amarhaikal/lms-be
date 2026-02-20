@@ -99,21 +99,29 @@ namespace QUANTM.Controllers.Auth
 
         [Authorize(Roles = "SA,ADM")]
         [HttpPost("logout-all")]
-        public async Task<IActionResult> LogoutAllSessions([FromBody] LoginRequest request)
+        public async Task<IActionResult> LogoutAllSessions()
         {
-            var result = await _authService.LogoutAllSessionsAsync(request.Username, request.Password);
+            var result = await _authService.LogoutAllSessionsAsync();
             if (result.Status != 200)
             {
                 return StatusCode(result.Status, result);
             }
+
+            Response.Cookies.Delete("X-Access-Token", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = Request.IsHttps,
+                SameSite = SameSiteMode.Lax
+            });
+
             return Ok(result);
         }
 
         [Authorize(Roles = "SA,ADM")]
-        [HttpPost("logout-session/{sessionId}")]
-        public async Task<IActionResult> LogoutSpecificSession(int sessionId, [FromBody] LoginRequest request)
+        [HttpDelete("logout-session/{sessionId}")]
+        public async Task<IActionResult> LogoutSpecificSession(int sessionId)
         {
-            var result = await _authService.LogoutSpecificSessionAsync(sessionId, request.Username, request.Password);
+            var result = await _authService.LogoutSpecificSessionAsync(sessionId);
             if (result.Status != 200)
             {
                 return StatusCode(result.Status, result);

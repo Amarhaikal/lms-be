@@ -365,7 +365,7 @@ namespace QUANTM.Services.Auth
 
                 session.IsActive = false;
                 session.LoggedOutAt = DateTime.UtcNow;
-                session.LogoutReason = "Manual";
+                session.LogoutReason = "User Logged Out";
                 await _context.SaveChangesAsync();
 
                 await _auditService.LogAsync("USER_LOGOUT", "User", session.UserId, userId: session.UserId);
@@ -458,28 +458,22 @@ namespace QUANTM.Services.Auth
             }
         }
 
-        public async Task<ApiResponse<string>> LogoutAllSessionsAsync(string username, string password)
+        public async Task<ApiResponse<string>> LogoutAllSessionsAsync()
         {
             try
             {
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username || u.Email == username);
-                if (user == null)
+                var userId = _identityService.GetUserId();
+                if (userId == null)
                 {
-                    return new ApiResponse<string> { Status = 401, Message = "Invalid username or password" };
+                    return new ApiResponse<string> { Status = 401, Message = "Unauthorized: Could not determine user ID" };
                 }
 
-                bool isPasswordValid = BCrypt.Net.BCrypt.Verify(password, user.Password);
-                if (!isPasswordValid)
-                {
-                    return new ApiResponse<string> { Status = 401, Message = "Invalid username or password" };
-                }
-
-                var activeSessions = await _context.Sessions.Where(s => s.UserId == user.Id && s.IsActive).ToListAsync();
+                var activeSessions = await _context.Sessions.Where(s => s.UserId == userId.Value && s.IsActive).ToListAsync();
                 foreach (var session in activeSessions)
                 {
                     session.IsActive = false;
                     session.LoggedOutAt = DateTime.UtcNow;
-                    session.LogoutReason = "LogoutAll";
+                    session.LogoutReason = "User Logged Out (All Devices)";
                 }
 
                 await _context.SaveChangesAsync();
@@ -491,23 +485,17 @@ namespace QUANTM.Services.Auth
             }
         }
 
-        public async Task<ApiResponse<string>> LogoutSpecificSessionAsync(int sessionId, string username, string password)
+        public async Task<ApiResponse<string>> LogoutSpecificSessionAsync(int sessionId)
         {
             try
             {
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username || u.Email == username);
-                if (user == null)
+                var userId = _identityService.GetUserId();
+                if (userId == null)
                 {
-                    return new ApiResponse<string> { Status = 401, Message = "Invalid username or password" };
+                    return new ApiResponse<string> { Status = 401, Message = "Unauthorized: Could not determine user ID" };
                 }
 
-                bool isPasswordValid = BCrypt.Net.BCrypt.Verify(password, user.Password);
-                if (!isPasswordValid)
-                {
-                    return new ApiResponse<string> { Status = 401, Message = "Invalid username or password" };
-                }
-
-                var session = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == sessionId && s.UserId == user.Id);
+                var session = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == sessionId);
                 if (session == null)
                 {
                     return new ApiResponse<string> { Status = 404, Message = "Session not found" };
@@ -515,7 +503,7 @@ namespace QUANTM.Services.Auth
 
                 session.IsActive = false;
                 session.LoggedOutAt = DateTime.UtcNow;
-                session.LogoutReason = "Manual";
+                session.LogoutReason = session.UserId == userId.Value ? "User Logged Out" : "Revoked by Administrator";
                 await _context.SaveChangesAsync();
 
                 return new ApiResponse<string> { Status = 200, Message = "Session logged out successfully" };
