@@ -81,7 +81,7 @@ namespace QUANTM.Controllers.Parameter
             }
         }
 
-        [Authorize(Roles = "ADM,SA")]
+        [Authorize(Roles = "SA,ADM")]
         [HttpPost("codeType")]
         public async Task<IActionResult> CreateCodeType([FromBody] CodeTypeCreateDto body)
         {
@@ -118,7 +118,7 @@ namespace QUANTM.Controllers.Parameter
             }
         }
 
-        [Authorize(Roles = "ADM,SA")]
+        [Authorize(Roles = "SA,ADM")]
         [HttpPut("codeType/{id}")]
         public async Task<IActionResult> UpdateCodeType(int id, [FromBody] CodeTypeUpdateDto body)
         {
@@ -160,7 +160,7 @@ namespace QUANTM.Controllers.Parameter
             }
         }
 
-        [Authorize(Roles = "ADM,SA")]
+        [Authorize(Roles = "SA,ADM")]
         [HttpDelete("codeType/{id}")]
         public async Task<IActionResult> DeleteCodeType(int id)
         {
@@ -227,7 +227,7 @@ namespace QUANTM.Controllers.Parameter
             }
         }
 
-        [Authorize(Roles = "ADM,SA")]
+        [Authorize(Roles = "SA,ADM")]
         [HttpPost("systemCode")]
         public async Task<IActionResult> CreateSystemCode([FromBody] SystemCodeCreateDto body)
         {
@@ -276,7 +276,7 @@ namespace QUANTM.Controllers.Parameter
             }
         }
 
-        [Authorize(Roles = "ADM,SA")]
+        [Authorize(Roles = "SA,ADM")]
         [HttpPost("systemCodes")]
         public async Task<IActionResult> CreateSystemCodes([FromBody] List<SystemCodeCreateDto> body)
         {
@@ -342,7 +342,7 @@ namespace QUANTM.Controllers.Parameter
             }
         }
 
-        [Authorize(Roles = "ADM,SA")]
+        [Authorize(Roles = "SA,ADM")]
         [HttpPut("systemCode/{id}")]
         public async Task<IActionResult> UpdateSystemCode(int id, [FromBody] SystemCodeUpdateDto body)
         {
@@ -403,7 +403,7 @@ namespace QUANTM.Controllers.Parameter
             }
         }
 
-        [Authorize(Roles = "ADM,SA")]
+        [Authorize(Roles = "SA,ADM")]
         [HttpPut("systemCodes")]
         public async Task<IActionResult> UpdateSystemCodes([FromBody] List<SystemCodeBatchUpdateDto> body)
         {
@@ -505,7 +505,7 @@ namespace QUANTM.Controllers.Parameter
             }
         }
 
-        [Authorize(Roles = "ADM,SA")]
+        [Authorize(Roles = "SA,ADM")]
         [HttpDelete("systemCode/{id}")]
         public async Task<IActionResult> DeleteSystemCode(int id)
         {
@@ -528,7 +528,7 @@ namespace QUANTM.Controllers.Parameter
             }
         }
 
-        [Authorize(Roles = "ADM,SA")]
+        [Authorize(Roles = "SA,ADM")]
         [HttpPost("systemCodes/delete")]
         public async Task<IActionResult> DeleteSystemCodes([FromBody] List<int> ids)
         {

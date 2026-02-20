@@ -1,6 +1,7 @@
 using QUANTM.Controllers.Common;
 using QUANTM.DTOs.Auth;
 using QUANTM.Services.Auth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace QUANTM.Controllers.Auth
@@ -18,6 +19,7 @@ namespace QUANTM.Controllers.Auth
             _logger = logger;
         }
 
+        [Authorize(Roles = "SA,ADM")]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
@@ -83,6 +85,7 @@ namespace QUANTM.Controllers.Auth
             return Ok(result);
         }
 
+        [Authorize(Roles = "SA,ADM")]
         [HttpGet("sessions")]
         public async Task<IActionResult> GetActiveSessions()
         {
@@ -95,6 +98,7 @@ namespace QUANTM.Controllers.Auth
             return Ok(result);
         }
 
+        [Authorize(Roles = "SA,ADM")]
         [HttpPost("logout-all")]
         public async Task<IActionResult> LogoutAllSessions([FromBody] LoginRequest request)
         {
@@ -106,6 +110,7 @@ namespace QUANTM.Controllers.Auth
             return Ok(result);
         }
 
+        [Authorize(Roles = "SA,ADM")]
         [HttpPost("logout-session/{sessionId}")]
         public async Task<IActionResult> LogoutSpecificSession(int sessionId, [FromBody] LoginRequest request)
         {
