@@ -41,9 +41,7 @@ namespace QUANTM.Controllers.User
             {
                 var query = _context.Users
                     .Include(u => u.Role)
-                    // .Include(u => u.Gender)
                     .Include(u => u.Status)
-                    // .Include(u => u.Department)
                     .Include(u => u.Creator)
                     .Include(u => u.Updater)
                     .AsQueryable();
