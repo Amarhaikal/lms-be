@@ -10,7 +10,7 @@ namespace QUANTM.Services.Auth
         Task<ApiResponse<object>> RegisterAsync(RegisterRequest request);
         Task<ApiResponse<LoginResponseData>> LoginAsync(LoginRequest request, string ipAddress, string userAgent);
         Task<ApiResponse<string>> LogoutAsync(string token);
-        Task<ApiResponse<object>> GetActiveSessionsAsync(SessionListParamsDto sessionListParamsDto);
+        Task<ApiResponse<object>> GetSessionsAsync(SessionListParamsDto sessionListParamsDto);
         Task<ApiResponse<string>> LogoutAllSessionsAsync();
         Task<ApiResponse<string>> LogoutSpecificSessionAsync(int sessionId);
     }
