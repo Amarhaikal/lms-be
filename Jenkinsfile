@@ -42,6 +42,8 @@ pipeline {
                     echo 'Stopping old containers...'
                     sh """
                         cd /var/www/quantm/quantm-be
+                        docker stop quantm-nginx || true
+                        docker rm quantm-nginx || true
                         docker compose down || true
                     """
                 }
@@ -116,7 +118,7 @@ pipeline {
                     echo 'Performing health check...'
                     sleep 10
                     sh """
-                        curl -f http://localhost/ || exit 1
+                        curl -f http://localhost:8080 || exit 1
                     """
                 }
             }
