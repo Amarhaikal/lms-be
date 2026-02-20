@@ -129,7 +129,7 @@ namespace QUANTM.Controllers.Common
                 Message = "Data retrieved successfully",
                 Data = new PagedData<T>
                 {
-                    Data = data,
+                    List = data,
                     TotalCount = total,
                     PageNo = page,
                     PageSize = pageSize
