@@ -378,7 +378,7 @@ namespace QUANTM.Services.Auth
             }
         }
 
-        public async Task<ApiResponse<object>> GetActiveSessionsAsync(SessionListParamsDto p)
+        public async Task<ApiResponse<object>> GetSessionsAsync(SessionListParamsDto p)
         {
             try
             {
@@ -399,6 +399,24 @@ namespace QUANTM.Services.Auth
 
                 if (p.IsActive.HasValue)
                     query = query.Where(s => s.IsActive == p.IsActive.Value);
+
+                if (p.FromDate.HasValue)
+                {
+                    var fromUtc = p.FromDate.Value.AddHours(-8); // Convert local midnight to UTC
+                    query = query.Where(s => s.CreatedAt >= fromUtc);
+                }
+
+                if (p.ToDate.HasValue)
+                {
+                    var toUtc = p.ToDate.Value.AddHours(-8).AddDays(1); // End of the local day in UTC
+                    query = query.Where(s => s.CreatedAt < toUtc);
+                }
+
+                if (p.LastActivityDate.HasValue)
+                {
+                    var lastActivityDateUtc = p.LastActivityDate.Value.AddHours(-8);
+                    query = query.Where(s => s.LastActivityAt >= lastActivityDateUtc);
+                }
 
                 // Get total count for pagination
                 var totalCount = await query.CountAsync();
