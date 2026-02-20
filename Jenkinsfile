@@ -44,6 +44,8 @@ pipeline {
                         cd /var/www/quantm/quantm-be
                         docker stop quantm-nginx || true
                         docker rm quantm-nginx || true
+                        docker stop quantm-backend || true
+                        docker rm quantm-backend || true
                         docker compose down || true
                     """
                 }
@@ -118,7 +120,7 @@ pipeline {
                     echo 'Performing health check...'
                     sleep 10
                     sh """
-                        curl -f http://localhost:8080 || exit 1
+                        curl -f http://localhost:8081 || exit 1
                     """
                 }
             }
