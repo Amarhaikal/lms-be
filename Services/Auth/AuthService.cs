@@ -4,6 +4,7 @@ using QUANTM.Data;
 using QUANTM.DTOs.Auth;
 using QUANTM.DTOs.Session;
 using QUANTM.DTOs.User;
+using QUANTM.DTOs.Parameter;
 using QUANTM.Model.Common;
 using QUANTM.Models.Auth;
 using QUANTM.Models.User;
@@ -377,38 +378,83 @@ namespace QUANTM.Services.Auth
             }
         }
 
-        public async Task<ApiResponse<List<SessionDto>>> GetActiveSessionsAsync(string username)
+        public async Task<ApiResponse<object>> GetActiveSessionsAsync(SessionListParamsDto p)
         {
             try
             {
-                if (string.IsNullOrEmpty(username))
-                {
-                    return new ApiResponse<List<SessionDto>> { Status = 400, Message = "Username is required" };
-                }
+                var query = _context.Sessions
+                    .Include(s => s.User)
+                        .ThenInclude(u => u!.Role)
+                    .AsQueryable();
 
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
-                if (user == null)
-                {
-                    return new ApiResponse<List<SessionDto>> { Status = 404, Message = "User not found" };
-                }
+                // Filters
+                if (!string.IsNullOrWhiteSpace(p.Fullname))
+                    query = query.Where(s => s.User != null && s.User.Fullname.Contains(p.Fullname));
 
-                var activeSessions = await _context.Sessions
-                    .Where(s => s.UserId == user.Id && s.IsActive)
+                if (!string.IsNullOrWhiteSpace(p.Username))
+                    query = query.Where(s => s.User != null && s.User.Username.Contains(p.Username));
+
+                if (!string.IsNullOrWhiteSpace(p.Role))
+                    query = query.Where(s => s.User != null && s.User.Role != null && s.User.Role.Code == p.Role);
+
+                if (p.IsActive.HasValue)
+                    query = query.Where(s => s.IsActive == p.IsActive.Value);
+
+                // Get total count for pagination
+                var totalCount = await query.CountAsync();
+
+                var sessions = await query
                     .OrderByDescending(s => s.CreatedAt)
+                    .Skip((p.PageNo - 1) * p.PageSize)
+                    .Take(p.PageSize)
                     .ToListAsync();
 
-                var sessionDtos = _mapper.Map<List<SessionDto>>(activeSessions);
+                var list = sessions.Select(s => new SessionListDto
+                {
+                    Id = s.Id,
+                    SessionDuration = s.SessionDuration,
+                    CreatedAt = DateTime.SpecifyKind(s.CreatedAt.AddHours(8), DateTimeKind.Unspecified),
+                    ExpiresAt = DateTime.SpecifyKind(s.ExpiresAt.AddHours(8), DateTimeKind.Unspecified),
+                    LoggedOutAt = s.LoggedOutAt.HasValue
+                        ? (DateTime?)DateTime.SpecifyKind(s.LoggedOutAt.Value.AddHours(8), DateTimeKind.Unspecified)
+                        : null,
+                    IsActive = s.IsActive,
+                    IpAddress = s.IpAddress,
+                    DeviceType = s.DeviceType,
+                    Location = s.Location,
+                    LastActivityAt = s.LastActivityAt.HasValue
+                        ? (DateTime?)DateTime.SpecifyKind(s.LastActivityAt.Value.AddHours(8), DateTimeKind.Unspecified)
+                        : null,
+                    LogoutReason = s.LogoutReason,
+                    User = s.User == null ? null : new SessionUserDto
+                    {
+                        Id = s.User.Id,
+                        Fullname = s.User.Fullname,
+                        Username = s.User.Username,
+                        Role = s.User.Role == null ? null : new SystemCodeNestedDto
+                        {
+                            Code = s.User.Role.Code,
+                            Description = s.User.Role.Description
+                        }
+                    }
+                }).ToList();
 
-                return new ApiResponse<List<SessionDto>>
+                return new ApiResponse<object>
                 {
                     Status = 200,
                     Message = "Data retrieved successfully",
-                    Data = sessionDtos
+                    Data = new PagedData<SessionListDto>
+                    {
+                        List = list,
+                        TotalCount = totalCount,
+                        PageNo = p.PageNo,
+                        PageSize = p.PageSize
+                    }
                 };
             }
             catch (Exception ex)
             {
-                return new ApiResponse<List<SessionDto>> { Status = 500, Message = $"An error occurred: {ex.Message}" };
+                return new ApiResponse<object> { Status = 500, Message = $"An error occurred: {ex.Message}" };
             }
         }
 

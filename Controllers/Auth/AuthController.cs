@@ -87,10 +87,9 @@ namespace QUANTM.Controllers.Auth
 
         [Authorize(Roles = "SA,ADM")]
         [HttpGet("sessions")]
-        public async Task<IActionResult> GetActiveSessions()
+        public async Task<IActionResult> GetActiveSessions([FromQuery] SessionListParamsDto sessionListParamsDto)
         {
-            var username = HttpContext.Request.Query["username"].ToString();
-            var result = await _authService.GetActiveSessionsAsync(username);
+            var result = await _authService.GetActiveSessionsAsync(sessionListParamsDto);
             if (result.Status != 200)
             {
                 return StatusCode(result.Status, result);
