@@ -53,5 +53,8 @@ namespace QUANTM.DTOs.Auth
 
         [JsonPropertyName("role")]
         public SystemCodeNestedDto? Role { get; set; }
+
+        [JsonPropertyName("profile_image_url")]
+        public string? ProfileImageUrl { get; set; }
     }
 }

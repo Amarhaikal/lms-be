@@ -385,6 +385,8 @@ namespace QUANTM.Services.Auth
                 var query = _context.Sessions
                     .Include(s => s.User)
                         .ThenInclude(u => u!.Role)
+                    .Include(s => s.User)
+                        .ThenInclude(u => u!.ProfileImage)
                     .AsQueryable();
 
                 // Filters
@@ -453,7 +455,10 @@ namespace QUANTM.Services.Auth
                         {
                             Code = s.User.Role.Code,
                             Description = s.User.Role.Description
-                        }
+                        },
+                        ProfileImageUrl = s.User.ProfileImageId.HasValue
+                            ? $"/api/documents/{s.User.ProfileImageId}/content"
+                            : null
                     }
                 }).ToList();
 
