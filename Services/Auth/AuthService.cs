@@ -8,7 +8,11 @@ using QUANTM.DTOs.Parameter;
 using QUANTM.Model.Common;
 using QUANTM.Models.Auth;
 using QUANTM.Models.User;
-
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 namespace QUANTM.Services.Auth
 {
     public class AuthService : IAuthService
@@ -23,6 +27,7 @@ namespace QUANTM.Services.Auth
         private readonly EncryptionService _encryptionService;
         private readonly IdentityService _identityService;
         private readonly IWebHostEnvironment _environment;
+        private readonly IConfiguration _configuration;
 
         public AuthService(
             ApplicationDbContext context,
@@ -34,7 +39,8 @@ namespace QUANTM.Services.Auth
             EmailService emailService,
             EncryptionService encryptionService,
             IdentityService identityService,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment,
+            IConfiguration configuration)
         {
             _context = context;
             _mapper = mapper;
@@ -46,6 +52,7 @@ namespace QUANTM.Services.Auth
             _encryptionService = encryptionService;
             _identityService = identityService;
             _environment = environment;
+            _configuration = configuration;
         }
 
         public async Task<ApiResponse<object>> RegisterAsync(RegisterRequest request)
@@ -336,6 +343,173 @@ namespace QUANTM.Services.Auth
             catch (Exception ex)
             {
                 return new ApiResponse<LoginResponseData> { Status = 500, Message = $"An error occurred: {ex.Message}" };
+            }
+        }
+
+        public async Task<ApiResponse<LoginResponseData>> LoginWithMicrosoftAsync(MicrosoftLoginRequest request, string ipAddress, string userAgent)
+        {
+            try
+            {
+                var tenantId = _configuration["AzureAd:TenantId"];
+                var clientId = _configuration["AzureAd:ClientId"];
+                var instance = _configuration["AzureAd:Instance"];
+                var authority = $"{instance}{tenantId}/v2.0";
+
+                var configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
+                    $"{authority}/.well-known/openid-configuration",
+                    new OpenIdConnectConfigurationRetriever());
+
+                var openIdConfig = await configurationManager.GetConfigurationAsync(CancellationToken.None);
+
+                var validationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuers = new[] { $"https://login.microsoftonline.com/{tenantId}/v2.0", $"https://sts.windows.net/{tenantId}/" },
+                    ValidateAudience = true,
+                    ValidAudience = clientId,
+                    ValidateLifetime = true,
+                    IssuerSigningKeys = openIdConfig.SigningKeys
+                };
+
+                var handler = new JwtSecurityTokenHandler();
+
+                if (!handler.CanReadToken(request.IdToken))
+                {
+                    return new ApiResponse<LoginResponseData> { Status = 401, Message = "Invalid Microsoft token format" };
+                }
+
+                ClaimsPrincipal principal;
+                try
+                {
+                    principal = handler.ValidateToken(request.IdToken, validationParameters, out var validatedToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Microsoft token validation failed");
+                    return new ApiResponse<LoginResponseData> { Status = 401, Message = "Invalid or expired Microsoft token" };
+                }
+
+                var email = principal.FindFirst("preferred_username")?.Value ?? principal.FindFirst(ClaimTypes.Email)?.Value;
+                var name = principal.FindFirst("name")?.Value ?? "Microsoft User";
+
+                if (string.IsNullOrEmpty(email))
+                {
+                    return new ApiResponse<LoginResponseData> { Status = 400, Message = "Could not retrieve email from Microsoft token" };
+                }
+
+                var user = await _context.Users
+                    .Include(u => u.Role)
+                    .Include(u => u.Status)
+                    .Include(u => u.Gender)
+                    .Include(u => u.Address).ThenInclude(a => a!.Country)
+                    .Include(u => u.Address).ThenInclude(a => a!.State)
+                    .FirstOrDefaultAsync(u => u.Email == email || u.Username == email);
+
+                if (user == null)
+                {
+                    // Auto-register the user if they don't exist
+                    var role = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == "USR"); // Default role
+                    var statusActive = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == "A");
+
+                    user = new User
+                    {
+                        Fullname = name,
+                        Username = email,
+                        Email = email,
+                        Password = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString() + "Auth!123"), // Random secure fake password
+                        PasswordChangedAt = DateTime.UtcNow,
+                        RoleId = role?.Id ?? 0,
+                        StatusId = statusActive?.Id ?? 0,
+                        CreatedBy = null, // System created
+                        CreatedAt = DateTime.UtcNow,
+                        IdNo = _encryptionService.Encrypt("MS-" + Guid.NewGuid().ToString().Substring(0, 8)), // Fake IdNo
+                        IdNoHash = _encryptionService.Hash("MS-" + Guid.NewGuid().ToString().Substring(0, 8))
+                    };
+
+                    _context.Users.Add(user);
+                    await _context.SaveChangesAsync();
+
+                    // Reload with includes
+                    user = await _context.Users
+                        .Include(u => u.Role)
+                        .Include(u => u.Status)
+                        .Include(u => u.Gender)
+                        .FirstOrDefaultAsync(u => u.Id == user.Id);
+                }
+
+                if (user!.Status?.Code == "S")
+                {
+                    return new ApiResponse<LoginResponseData> { Status = 401, Message = "Account has been suspended. Please contact administrator." };
+                }
+
+                user.FailedLoginAttempts = 0;
+                user.LockedUntil = null;
+
+                var activeSession = await _context.Sessions
+                    .FirstOrDefaultAsync(s => s.UserId == user.Id && s.IsActive && s.ExpiresAt > DateTime.UtcNow);
+
+                if (activeSession != null)
+                {
+                    return new ApiResponse<LoginResponseData> { Status = 409, Message = "Your account is already logged in from another session. Please logout from the other device first." };
+                }
+
+                var (token, jti) = _jwtService.GenerateToken(user.Id, user.Username, user.RoleId, user.Role?.Code ?? "");
+
+                var knownIps = await _context.Sessions
+                    .Where(s => s.UserId == user.Id && s.IpAddress != null)
+                    .Select(s => s.IpAddress)
+                    .Distinct()
+                    .ToListAsync();
+
+                bool isNewIp = !knownIps.Contains(ipAddress);
+
+                var newSession = new Models.Session.Session
+                {
+                    UserId = user.Id,
+                    TokenJti = jti,
+                    IpAddress = ipAddress,
+                    DeviceType = GetDeviceType(userAgent),
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                    ExpiresAt = DateTime.UtcNow.AddMinutes(240),
+                    LastActivityAt = DateTime.UtcNow
+                };
+
+                _context.Sessions.Add(newSession);
+                await _context.SaveChangesAsync();
+
+                await _auditService.LogAsync("USER_LOGIN_MS", "Session", newSession.Id, userId: user.Id);
+
+                if (isNewIp && !_environment.IsDevelopment())
+                {
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            var dType = GetDeviceType(userAgent);
+                            await _emailService.SendNewLoginAlertAsync(user.Email, user.Fullname, ipAddress ?? "Unknown", dType);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failed to send new login alert to {Email}", user.Email);
+                        }
+                    });
+                }
+
+                var userDto = _mapper.Map<UserDetailsDto>(user);
+                userDto.IdNo = _encryptionService.Decrypt(userDto.IdNo);
+
+                return new ApiResponse<LoginResponseData>
+                {
+                    Status = 200,
+                    Message = "Login successful",
+                    Data = new LoginResponseData { Token = token, User = userDto }
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to login with Microsoft");
+                return new ApiResponse<LoginResponseData> { Status = 500, Message = $"An error occurred during Microsoft Login: {ex.Message}" };
             }
         }
 

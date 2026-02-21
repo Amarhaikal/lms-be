@@ -9,6 +9,7 @@ namespace QUANTM.Services.Auth
     {
         Task<ApiResponse<object>> RegisterAsync(RegisterRequest request);
         Task<ApiResponse<LoginResponseData>> LoginAsync(LoginRequest request, string ipAddress, string userAgent);
+        Task<ApiResponse<LoginResponseData>> LoginWithMicrosoftAsync(MicrosoftLoginRequest request, string ipAddress, string userAgent);
         Task<ApiResponse<string>> LogoutAsync(string token);
         Task<ApiResponse<object>> GetSessionsAsync(SessionListParamsDto sessionListParamsDto);
         Task<ApiResponse<string>> LogoutAllSessionsAsync();

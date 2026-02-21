@@ -31,6 +31,35 @@ namespace QUANTM.Controllers.Auth
             return Ok(result);
         }
 
+        [HttpPost("login-microsoft")]
+        public async Task<IActionResult> LoginMicrosoft([FromBody] MicrosoftLoginRequest request)
+        {
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+            var userAgent = HttpContext.Request.Headers["User-Agent"].ToString();
+
+            var result = await _authService.LoginWithMicrosoftAsync(request, ipAddress, userAgent);
+
+            if (result.Status != 200)
+            {
+                if (result.Status == 401) return CResponseUnauthorized(result.Message);
+                if (result.Status == 409) return CResponseAlreadyLoggedIn();
+                return StatusCode(result.Status, result);
+            }
+
+            // Set Cookie
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = Request.IsHttps,
+                SameSite = SameSiteMode.None,
+                Expires = DateTimeOffset.UtcNow.AddMinutes(240),
+            };
+
+            Response.Cookies.Append("X-Access-Token", result.Data!.Token, cookieOptions);
+
+            return CResponseLoginWithCookieSuccessful(result.Data.User);
+        }
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
