@@ -57,6 +57,10 @@ services:
       # Encryption Keys
       - EncryptionKey=${ENCRYPTION_KEY}
       - EncryptionSalt=${ENCRYPTION_SALT}
+      # Azure AD (Microsoft Login)
+      - AzureAd__Instance=${AZURE_AD_INSTANCE:-https://login.microsoftonline.com/}
+      - AzureAd__ClientId=${AZURE_AD_CLIENT_ID}
+      - AzureAd__TenantId=${AZURE_AD_TENANT_ID}
     depends_on:
       mysql:
         condition: service_healthy
