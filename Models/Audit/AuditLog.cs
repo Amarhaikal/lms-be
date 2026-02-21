@@ -17,6 +17,17 @@ namespace QUANTM.Models.Audit
         [MaxLength(100)]
         public string Action { get; set; } = null!;
 
+        [Column("module")]
+        [MaxLength(100)]
+        public string? Module { get; set; }
+
+        [Column("status")]
+        [MaxLength(50)]
+        public string? Status { get; set; }
+
+        [Column("error_message")]
+        public string? ErrorMessage { get; set; }
+
         [Column("entity_type")]
         [MaxLength(50)]
         public string? EntityType { get; set; }

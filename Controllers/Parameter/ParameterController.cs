@@ -21,13 +21,15 @@ namespace QUANTM.Controllers.Parameter
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IdentityService _identityService;
+        private readonly AuditService _auditService;
 
-        public ParameterController(ILogger<ParameterController> logger, ApplicationDbContext context, IMapper mapper, IdentityService identityService)
+        public ParameterController(ILogger<ParameterController> logger, ApplicationDbContext context, IMapper mapper, IdentityService identityService, AuditService auditService)
         {
             _logger = logger;
             _context = context;
             _mapper = mapper;
             _identityService = identityService;
+            _auditService = auditService;
         }
 
         [HttpGet("codeType")]
@@ -109,6 +111,15 @@ namespace QUANTM.Controllers.Parameter
                 await _context.SaveChangesAsync();
 
                 var codeTypeDto = _mapper.Map<CodeTypeDto>(codeType);
+
+                await _auditService.LogAsync(
+                    action: "Create Code Type",
+                    module: "System Parameters",
+                    entityType: "CodeType",
+                    entityId: codeType.Id,
+                    newValues: codeTypeDto
+                );
+
                 return CResponseCreateSuccessful(codeTypeDto);
 
             }
@@ -146,11 +157,23 @@ namespace QUANTM.Controllers.Parameter
                     return BadRequest(response);
                 }
 
+                var oldCodeTypeDto = _mapper.Map<CodeTypeDto>(codeType);
+
                 codeType.Code = body.Code ?? codeType.Code;
                 codeType.Description = body.Description ?? codeType.Description;
                 await _context.SaveChangesAsync();
 
                 var codeTypeDto = _mapper.Map<CodeTypeDto>(codeType);
+
+                await _auditService.LogAsync(
+                    action: "Update Code Type",
+                    module: "System Parameters",
+                    entityType: "CodeType",
+                    entityId: codeType.Id,
+                    oldValues: oldCodeTypeDto,
+                    newValues: codeTypeDto
+                );
+
                 return CResponseUpdateSuccessful(codeTypeDto);
 
             }
@@ -172,8 +195,18 @@ namespace QUANTM.Controllers.Parameter
                     return CResponseNotFound();
                 }
 
+                var oldCodeTypeDto = _mapper.Map<CodeTypeDto>(codeType);
+
                 _context.CodeTypes.Remove(codeType);
                 await _context.SaveChangesAsync();
+
+                await _auditService.LogAsync(
+                    action: "Delete Code Type",
+                    module: "System Parameters",
+                    entityType: "CodeType",
+                    entityId: id,
+                    oldValues: oldCodeTypeDto
+                );
 
                 return CResponseDeleteSuccessful();
             }
@@ -268,6 +301,15 @@ namespace QUANTM.Controllers.Parameter
                 await _context.SaveChangesAsync();
 
                 var systemCodeDto = _mapper.Map<SystemCodeDto>(systemCode);
+
+                await _auditService.LogAsync(
+                    action: "Create System Code",
+                    module: "System Parameters",
+                    entityType: "SystemCode",
+                    entityId: systemCode.Id,
+                    newValues: systemCodeDto
+                );
+
                 return CResponseCreateSuccessful(systemCodeDto);
             }
             catch (Exception ex)
@@ -334,6 +376,14 @@ namespace QUANTM.Controllers.Parameter
                 await _context.SaveChangesAsync();
 
                 var systemCodesDto = _mapper.Map<List<SystemCodeDto>>(systemCodes);
+
+                await _auditService.LogAsync(
+                    action: "Create System Codes (Batch)",
+                    module: "System Parameters",
+                    entityType: "SystemCode",
+                    newValues: systemCodesDto
+                );
+
                 return CResponseCreateSuccessful(systemCodesDto);
             }
             catch (Exception ex)
@@ -358,6 +408,8 @@ namespace QUANTM.Controllers.Parameter
                 {
                     return CResponseNotFound();
                 }
+
+                var oldSystemCodeDto = _mapper.Map<SystemCodeDto>(systemCode);
 
                 // If CodeTypeCode is provided, look up the CodeType and update CodeTypeId
                 if (!string.IsNullOrEmpty(body.CodeTypeCode))
@@ -395,6 +447,16 @@ namespace QUANTM.Controllers.Parameter
                 await _context.SaveChangesAsync();
 
                 var systemCodeDto = _mapper.Map<SystemCodeDto>(systemCode);
+
+                await _auditService.LogAsync(
+                    action: "Update System Code",
+                    module: "System Parameters",
+                    entityType: "SystemCode",
+                    entityId: systemCode.Id,
+                    oldValues: oldSystemCodeDto,
+                    newValues: systemCodeDto
+                );
+
                 return CResponseUpdateSuccessful(systemCodeDto);
             }
             catch (Exception ex)
@@ -428,6 +490,8 @@ namespace QUANTM.Controllers.Parameter
                     var missingIds = inputIds.Except(foundIds);
                     return CResponseException($"System codes not found: {string.Join(", ", missingIds)}");
                 }
+
+                var oldSystemCodesDto = _mapper.Map<List<SystemCodeDto>>(systemCodes);
 
                 // Handle CodeTypeCode lookups if any are provided
                 var requestedCodeTypes = body
@@ -497,6 +561,15 @@ namespace QUANTM.Controllers.Parameter
                 await _context.SaveChangesAsync();
 
                 var systemCodesDto = _mapper.Map<List<SystemCodeDto>>(systemCodes);
+
+                await _auditService.LogAsync(
+                    action: "Update System Codes (Batch)",
+                    module: "System Parameters",
+                    entityType: "SystemCode",
+                    oldValues: oldSystemCodesDto,
+                    newValues: systemCodesDto
+                );
+
                 return CResponseUpdateSuccessful(systemCodesDto);
             }
             catch (Exception ex)
@@ -517,8 +590,18 @@ namespace QUANTM.Controllers.Parameter
                     return CResponseNotFound();
                 }
 
+                var oldSystemCodeDto = _mapper.Map<SystemCodeDto>(systemCode);
+
                 _context.SystemCodes.Remove(systemCode);
                 await _context.SaveChangesAsync();
+
+                await _auditService.LogAsync(
+                    action: "Delete System Code",
+                    module: "System Parameters",
+                    entityType: "SystemCode",
+                    entityId: id,
+                    oldValues: oldSystemCodeDto
+                );
 
                 return CResponseDeleteSuccessful();
             }
@@ -547,8 +630,17 @@ namespace QUANTM.Controllers.Parameter
                     return CResponseException($"System codes not found: {string.Join(", ", missingIds)}");
                 }
 
+                var oldSystemCodesDto = _mapper.Map<List<SystemCodeDto>>(systemCodes);
+
                 _context.SystemCodes.RemoveRange(systemCodes);
                 await _context.SaveChangesAsync();
+
+                await _auditService.LogAsync(
+                    action: "Delete System Codes (Batch)",
+                    module: "System Parameters",
+                    entityType: "SystemCode",
+                    oldValues: oldSystemCodesDto
+                );
 
                 return CResponseDeleteSuccessful();
             }

@@ -170,6 +170,12 @@ namespace QUANTM.Controllers.User
                     return CResponseNotFound();
                 }
 
+                var oldUserDto = _mapper.Map<UserDetailsDto>(user);
+                if (!string.IsNullOrEmpty(oldUserDto.IdNo))
+                {
+                    oldUserDto.IdNo = _encryptionService.Decrypt(oldUserDto.IdNo);
+                }
+
                 // Map standard fields (non-navigation, non-encrypted)
                 _mapper.Map(userUpdateDto, user);
 
@@ -282,6 +288,17 @@ namespace QUANTM.Controllers.User
                 var userDto = _mapper.Map<UserDetailsDto>(updatedUser);
                 userDto.IdNo = _encryptionService.Decrypt(userDto.IdNo);
 
+                // Log Audit
+                await _auditService.LogAsync(
+                    action: "Update User",
+                    module: "User Management",
+                    entityType: "User",
+                    entityId: user.Id,
+                    oldValues: oldUserDto,
+                    newValues: userDto,
+                    userId: _identityService.GetUserId()
+                );
+
                 return CResponseUpdateSuccessful(userDto);
             }
             catch (Exception ex)
@@ -308,8 +325,24 @@ namespace QUANTM.Controllers.User
                     return CResponseNotFound();
                 }
 
+                var oldUserDto = _mapper.Map<UserDetailsDto>(user);
+                if (!string.IsNullOrEmpty(oldUserDto.IdNo))
+                {
+                    oldUserDto.IdNo = _encryptionService.Decrypt(oldUserDto.IdNo);
+                }
+
                 _context.Users.Remove(user);
                 await _context.SaveChangesAsync();
+
+                // Log Audit
+                await _auditService.LogAsync(
+                    action: "Delete User",
+                    module: "User Management",
+                    entityType: "User",
+                    entityId: id,
+                    oldValues: oldUserDto,
+                    userId: _identityService.GetUserId()
+                );
 
                 return CResponseDeleteSuccessful();
             }
@@ -374,6 +407,16 @@ namespace QUANTM.Controllers.User
                 user.ProfileImageId = document.Id;
                 await _context.SaveChangesAsync();
 
+                // Log Audit
+                await _auditService.LogAsync(
+                    action: "Update Profile Image",
+                    module: "User Management",
+                    entityType: "User",
+                    entityId: id,
+                    newValues: new { ProfileImageId = document.Id },
+                    userId: currentUserId
+                );
+
                 return CResponseCreateSuccessful(new { ProfileImageId = document.Id, FilePath = document.FilePath });
             }
             catch (ArgumentException ex)
@@ -424,6 +467,15 @@ namespace QUANTM.Controllers.User
                     // Optional: Clean up the document record and physical file
                     await _documentService.DeleteFileAsync(documentId);
                 }
+
+                // Log Audit
+                await _auditService.LogAsync(
+                    action: "Delete Profile Image",
+                    module: "User Management",
+                    entityType: "User",
+                    entityId: id,
+                    userId: currentUserId
+                );
 
                 return CResponseDeleteSuccessful();
             }
