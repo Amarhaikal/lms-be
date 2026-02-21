@@ -330,14 +330,21 @@ namespace QUANTM.Services.Auth
                     });
                 }
 
-                var userDto = _mapper.Map<UserDetailsDto>(user);
-                userDto.IdNo = _encryptionService.Decrypt(userDto.IdNo);
+                var myMiniProfile = new
+                {
+                    Fullname = user.Fullname,
+                    Shortname = user.Shortname,
+                    Username = user.Username,
+                    ProfileImageUrl = user.ProfileImageId.HasValue
+                        ? $"/api/documents/{user.ProfileImageId}/content"
+                        : null
+                };
 
                 return new ApiResponse<LoginResponseData>
                 {
                     Status = 200,
                     Message = "Login successful",
-                    Data = new LoginResponseData { Token = token, User = userDto }
+                    Data = new LoginResponseData { Token = token, User = myMiniProfile }
                 };
             }
             catch (Exception ex)
@@ -398,11 +405,11 @@ namespace QUANTM.Services.Auth
                 }
 
                 var user = await _context.Users
-                    .Include(u => u.Role)
-                    .Include(u => u.Status)
-                    .Include(u => u.Gender)
-                    .Include(u => u.Address).ThenInclude(a => a!.Country)
-                    .Include(u => u.Address).ThenInclude(a => a!.State)
+                    // .Include(u => u.Role)
+                    // .Include(u => u.Status)
+                    // .Include(u => u.Gender)
+                    // .Include(u => u.Address).ThenInclude(a => a!.Country)
+                    // .Include(u => u.Address).ThenInclude(a => a!.State)
                     .FirstOrDefaultAsync(u => u.Email == email || u.Username == email);
 
                 if (user == null)
@@ -470,14 +477,21 @@ namespace QUANTM.Services.Auth
                     });
                 }
 
-                var userDto = _mapper.Map<UserDetailsDto>(user);
-                userDto.IdNo = _encryptionService.Decrypt(userDto.IdNo);
+                var myMiniProfile = new
+                {
+                    Fullname = user.Fullname,
+                    Shortname = user.Shortname,
+                    Username = user.Username,
+                    ProfileImageUrl = user.ProfileImageId.HasValue
+                        ? $"/api/documents/{user.ProfileImageId}/content"
+                        : null
+                };
 
                 return new ApiResponse<LoginResponseData>
                 {
                     Status = 200,
                     Message = "Login successful",
-                    Data = new LoginResponseData { Token = token, User = userDto }
+                    Data = new LoginResponseData { Token = token, User = myMiniProfile }
                 };
             }
             catch (Exception ex)

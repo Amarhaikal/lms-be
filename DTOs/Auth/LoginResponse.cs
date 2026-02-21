@@ -6,7 +6,7 @@ namespace QUANTM.DTOs.Auth
     public class LoginResponseData
     {
         public string Token { get; set; } = null!;
-        public UserDetailsDto User { get; set; } = null!;
+        public object User { get; set; } = null!;
     }
 
     public class LoginResponse
