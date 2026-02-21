@@ -171,10 +171,13 @@ builder.Services.AddSingleton<AspNetCoreRateLimit.IProcessingStrategy, AspNetCor
 var app = builder.Build();
 
 // Configure Forwarded Headers for Nginx reverse proxy
-app.UseForwardedHeaders(new ForwardedHeadersOptions
+var forwardedHeadersOptions = new ForwardedHeadersOptions
 {
     ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
-});
+};
+forwardedHeadersOptions.KnownNetworks.Clear();
+forwardedHeadersOptions.KnownProxies.Clear();
+app.UseForwardedHeaders(forwardedHeadersOptions);
 app.UseMiddleware<QUANTM.Middleware.LoggingMiddleware>();
 
 // if (app.Environment.IsDevelopment())
