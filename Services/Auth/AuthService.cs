@@ -407,37 +407,11 @@ namespace QUANTM.Services.Auth
 
                 if (user == null)
                 {
-                    // Auto-register the user if they don't exist
-                    var role = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == "USR"); // Default role
-                    var statusActive = await _context.SystemCodes.FirstOrDefaultAsync(s => s.Code == "A");
-
-                    user = new User
-                    {
-                        Fullname = name,
-                        Username = email,
-                        Email = email,
-                        Password = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString() + "Auth!123"), // Random secure fake password
-                        PasswordChangedAt = DateTime.UtcNow,
-                        RoleId = role?.Id ?? 0,
-                        StatusId = statusActive?.Id ?? 0,
-                        CreatedBy = null, // System created
-                        CreatedAt = DateTime.UtcNow,
-                        IdNo = _encryptionService.Encrypt("MS-" + Guid.NewGuid().ToString().Substring(0, 8)), // Fake IdNo
-                        IdNoHash = _encryptionService.Hash("MS-" + Guid.NewGuid().ToString().Substring(0, 8))
-                    };
-
-                    _context.Users.Add(user);
-                    await _context.SaveChangesAsync();
-
-                    // Reload with includes
-                    user = await _context.Users
-                        .Include(u => u.Role)
-                        .Include(u => u.Status)
-                        .Include(u => u.Gender)
-                        .FirstOrDefaultAsync(u => u.Id == user.Id);
+                    _logger.LogWarning("Microsoft login attempted for unregistered email: {Email}", email);
+                    return new ApiResponse<LoginResponseData> { Status = 401, Message = "Your email is not registered in our system. Please contact the administrator." };
                 }
 
-                if (user!.Status?.Code == "S")
+                if (user.Status?.Code == "S")
                 {
                     return new ApiResponse<LoginResponseData> { Status = 401, Message = "Account has been suspended. Please contact administrator." };
                 }
