@@ -204,10 +204,11 @@ if (!app.Environment.IsDevelopment())
     // app.UseHttpsRedirection(); 
 }
 
+app.UseCors("BankingPolicy");
+
 // Add IP Rate Limiting
 app.UseMiddleware<AspNetCoreRateLimit.IpRateLimitMiddleware>();
 
-app.UseCors("BankingPolicy");
 app.UseMiddleware<QUANTM.Middleware.SecurityHeadersMiddleware>();
 
 app.UseAuthentication();
