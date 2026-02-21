@@ -51,7 +51,7 @@ namespace QUANTM.Controllers.Auth
             {
                 HttpOnly = true,
                 Secure = Request.IsHttps,
-                SameSite = SameSiteMode.Lax,
+                SameSite = SameSiteMode.None,
                 Expires = DateTimeOffset.UtcNow.AddMinutes(240),
             };
 
@@ -79,7 +79,7 @@ namespace QUANTM.Controllers.Auth
             {
                 HttpOnly = true,
                 Secure = Request.IsHttps,
-                SameSite = SameSiteMode.Lax
+                SameSite = SameSiteMode.None
             });
 
             return Ok(result);
@@ -111,7 +111,7 @@ namespace QUANTM.Controllers.Auth
             {
                 HttpOnly = true,
                 Secure = Request.IsHttps,
-                SameSite = SameSiteMode.Lax
+                SameSite = SameSiteMode.None
             });
 
             return Ok(result);
