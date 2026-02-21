@@ -19,6 +19,7 @@ namespace QUANTM.Middleware
             // Skip validation for public endpoints
             var path = context.Request.Path.Value?.ToLower();
             if (path == "/api/auth/login" ||
+                path == "/api/auth/login-microsoft" ||
                 path == "/api/auth/register" ||
                 path == "/" ||
                 path == "/api/auth/logout" ||

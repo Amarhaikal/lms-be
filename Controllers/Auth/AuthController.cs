@@ -53,6 +53,7 @@ namespace QUANTM.Controllers.Auth
                 Secure = true, // SameSite=None strictly requires Secure=true
                 SameSite = SameSiteMode.None,
                 Expires = DateTimeOffset.UtcNow.AddMinutes(240),
+                Path = "/"
             };
 
             Response.Cookies.Append("X-Access-Token", result.Data!.Token, cookieOptions);
@@ -82,6 +83,7 @@ namespace QUANTM.Controllers.Auth
                 Secure = true, // SameSite=None strictly requires Secure=true
                 SameSite = SameSiteMode.None,
                 Expires = DateTimeOffset.UtcNow.AddMinutes(240),
+                Path = "/"
             };
 
             Response.Cookies.Append("X-Access-Token", result.Data!.Token, cookieOptions);
@@ -92,7 +94,18 @@ namespace QUANTM.Controllers.Auth
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            var token = HttpContext.Request.Cookies["X-Access-Token"];
+            string? token = null;
+            var authHeader = HttpContext.Request.Headers["Authorization"].ToString();
+
+            if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
+            {
+                token = authHeader.Substring("Bearer ".Length).Trim();
+            }
+            else if (HttpContext.Request.Cookies.ContainsKey("X-Access-Token"))
+            {
+                token = HttpContext.Request.Cookies["X-Access-Token"];
+            }
+
             if (string.IsNullOrEmpty(token))
             {
                 return CResponseUnauthorized("No token provided");
@@ -104,11 +117,14 @@ namespace QUANTM.Controllers.Auth
                 return StatusCode(result.Status, result);
             }
 
-            Response.Cookies.Delete("X-Access-Token", new CookieOptions
+            // Forcefully expire the cookie
+            Response.Cookies.Append("X-Access-Token", "", new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true, // SameSite=None strictly requires Secure=true
-                SameSite = SameSiteMode.None
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.UnixEpoch,
+                Path = "/"
             });
 
             return Ok(result);
@@ -136,11 +152,14 @@ namespace QUANTM.Controllers.Auth
                 return StatusCode(result.Status, result);
             }
 
-            Response.Cookies.Delete("X-Access-Token", new CookieOptions
+            // Forcefully expire the cookie
+            Response.Cookies.Append("X-Access-Token", "", new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true, // SameSite=None strictly requires Secure=true
-                SameSite = SameSiteMode.None
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.UnixEpoch,
+                Path = "/"
             });
 
             return Ok(result);
