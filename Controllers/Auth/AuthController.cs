@@ -50,7 +50,7 @@ namespace QUANTM.Controllers.Auth
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = Request.IsHttps,
+                Secure = true, // SameSite=None strictly requires Secure=true
                 SameSite = SameSiteMode.None,
                 Expires = DateTimeOffset.UtcNow.AddMinutes(240),
             };
@@ -79,7 +79,7 @@ namespace QUANTM.Controllers.Auth
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = Request.IsHttps,
+                Secure = true, // SameSite=None strictly requires Secure=true
                 SameSite = SameSiteMode.None,
                 Expires = DateTimeOffset.UtcNow.AddMinutes(240),
             };
@@ -107,7 +107,7 @@ namespace QUANTM.Controllers.Auth
             Response.Cookies.Delete("X-Access-Token", new CookieOptions
             {
                 HttpOnly = true,
-                Secure = Request.IsHttps,
+                Secure = true, // SameSite=None strictly requires Secure=true
                 SameSite = SameSiteMode.None
             });
 
@@ -139,7 +139,7 @@ namespace QUANTM.Controllers.Auth
             Response.Cookies.Delete("X-Access-Token", new CookieOptions
             {
                 HttpOnly = true,
-                Secure = Request.IsHttps,
+                Secure = true, // SameSite=None strictly requires Secure=true
                 SameSite = SameSiteMode.None
             });
 
