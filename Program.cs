@@ -170,7 +170,11 @@ builder.Services.AddSingleton<AspNetCoreRateLimit.IProcessingStrategy, AspNetCor
 
 var app = builder.Build();
 
-// Add logging middleware
+// Configure Forwarded Headers for Nginx reverse proxy
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
+});
 app.UseMiddleware<QUANTM.Middleware.LoggingMiddleware>();
 
 // if (app.Environment.IsDevelopment())
@@ -199,11 +203,6 @@ if (!app.Environment.IsDevelopment())
 
 // Add IP Rate Limiting
 app.UseMiddleware<AspNetCoreRateLimit.IpRateLimitMiddleware>();
-
-app.UseForwardedHeaders(new ForwardedHeadersOptions
-{
-    ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
-});
 
 app.UseCors("BankingPolicy");
 app.UseMiddleware<QUANTM.Middleware.SecurityHeadersMiddleware>();
