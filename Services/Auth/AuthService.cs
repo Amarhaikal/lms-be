@@ -405,11 +405,11 @@ namespace QUANTM.Services.Auth
                 }
 
                 var user = await _context.Users
-                    // .Include(u => u.Role)
-                    // .Include(u => u.Status)
-                    // .Include(u => u.Gender)
-                    // .Include(u => u.Address).ThenInclude(a => a!.Country)
-                    // .Include(u => u.Address).ThenInclude(a => a!.State)
+                    .Include(u => u.Role)
+                    .Include(u => u.Status)
+                    .Include(u => u.Gender)
+                    .Include(u => u.Address).ThenInclude(a => a!.Country)
+                    .Include(u => u.Address).ThenInclude(a => a!.State)
                     .FirstOrDefaultAsync(u => u.Email == email || u.Username == email);
 
                 if (user == null)
