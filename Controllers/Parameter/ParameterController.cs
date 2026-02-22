@@ -217,25 +217,55 @@ namespace QUANTM.Controllers.Parameter
         }
 
         [HttpGet("systemCode")]
-        public async Task<IActionResult> GetSystemCode([FromQuery] SystemCodeListParamsDto systemCodeListParamsDto)
+        public async Task<IActionResult> GetSystemCode([FromQuery] SystemCodeListParamsDto paramsList)
         {
             try
             {
                 var query = _context.SystemCodes.AsQueryable();
 
-                if (!string.IsNullOrEmpty(systemCodeListParamsDto.CodeTypeCode))
+                if (!string.IsNullOrEmpty(paramsList.CodeTypeCode))
                 {
-                    query = query.Where(x => x.CodeType != null && x.CodeType.Code == systemCodeListParamsDto.CodeTypeCode);
+                    query = query.Where(x => x.CodeType != null && x.CodeType.Code == paramsList.CodeTypeCode);
                 }
 
-                if (!string.IsNullOrEmpty(systemCodeListParamsDto.Code))
+                if (!string.IsNullOrEmpty(paramsList.Code))
                 {
-                    query = query.Where(x => x.Code != null && x.Code.Contains(systemCodeListParamsDto.Code));
+                    query = query.Where(x => x.Code != null && x.Code.Contains(paramsList.Code));
                 }
 
-                if (!string.IsNullOrEmpty(systemCodeListParamsDto.Description))
+                if (!string.IsNullOrEmpty(paramsList.Description))
                 {
-                    query = query.Where(x => x.Description != null && x.Description.Contains(systemCodeListParamsDto.Description));
+                    query = query.Where(x => x.Description != null && x.Description.Contains(paramsList.Description));
+                }
+
+                if (!string.IsNullOrEmpty(paramsList.SortBy))
+                {
+                    query = paramsList.SortBy.ToLower()
+                    switch
+                    {
+                        "code" => paramsList.SortOrder?.ToLower() == "desc"
+                            ? query.OrderByDescending(s => s.Code)
+                            : query.OrderBy(s => s.Code),
+                        "description" => paramsList.SortOrder?.ToLower() == "desc"
+                            ? query.OrderByDescending(s => s.Description)
+                            : query.OrderBy(s => s.Description),
+                        "code_type" => paramsList.SortOrder?.ToLower() == "desc"
+                            ? query.OrderByDescending(s => s.CodeType!.Description)
+                            : query.OrderBy(s => s.CodeType!.Description),
+                        "created_by" => paramsList.SortOrder?.ToLower() == "desc"
+                            ? query.OrderByDescending(s => s.CreatedBy)
+                            : query.OrderBy(s => s.CreatedBy),
+                        "updated_by" => paramsList.SortOrder?.ToLower() == "desc"
+                            ? query.OrderByDescending(s => s.UpdatedBy)
+                            : query.OrderBy(s => s.UpdatedBy),
+                        "created_at" => paramsList.SortOrder?.ToLower() == "desc"
+                            ? query.OrderByDescending(s => s.CreatedAt)
+                            : query.OrderBy(s => s.CreatedAt),
+                        "updated_at" => paramsList.SortOrder?.ToLower() == "desc"
+                            ? query.OrderByDescending(s => s.UpdatedAt)
+                            : query.OrderBy(s => s.UpdatedAt),
+                        _ => query.OrderByDescending(s => s.CreatedAt)
+                    };
                 }
 
                 // Get total count before pagination
@@ -246,13 +276,13 @@ namespace QUANTM.Controllers.Parameter
                     .Include(x => x.CreatedByUser)
                     .Include(x => x.UpdatedByUser)
                     .Include(x => x.CodeType)
-                    .Skip((systemCodeListParamsDto.PageNo - 1) * systemCodeListParamsDto.PageSize)
-                    .Take(systemCodeListParamsDto.PageSize)
+                    .Skip((paramsList.PageNo - 1) * paramsList.PageSize)
+                    .Take(paramsList.PageSize)
                     .ToListAsync();
 
                 var systemCodeDto = _mapper.Map<List<SystemCodeDto>>(systemCodes);
 
-                return CResponseGetListSuccessful(systemCodeDto, totalCount, systemCodeListParamsDto.PageNo, systemCodeListParamsDto.PageSize);
+                return CResponseGetListSuccessful(systemCodeDto, totalCount, paramsList.PageNo, paramsList.PageSize);
             }
             catch (Exception ex)
             {

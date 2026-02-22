@@ -17,6 +17,14 @@ namespace QUANTM.DTOs.Parameter
         [JsonPropertyName("description")]
         public string? Description { get; set; }
 
+        [FromQuery(Name = "sort_by")]
+        [JsonPropertyName("sort_by")]
+        public string? SortBy { get; set; }
+
+        [FromQuery(Name = "sort_order")]
+        [JsonPropertyName("sort_order")]
+        public string? SortOrder { get; set; }
+
         [FromQuery(Name = "page_no")]
         [JsonPropertyName("page_no")]
         public int PageNo { get; set; } = 1;
