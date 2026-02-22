@@ -5,6 +5,8 @@ using QUANTM.DTOs.User;
 using QUANTM.Models.Common;
 using QUANTM.Models.Parameter;
 using QUANTM.Models.User;
+using QUANTM.DTOs.Rate;
+using QUANTM.Models.Rate;
 namespace QUANTM.Mappings
 {
     public class MappingProfile : Profile
@@ -19,6 +21,13 @@ namespace QUANTM.Mappings
 
             CreateMap<CodeType, CodeTypeNestedDto>();
             CreateMap<SystemCode, SystemCodeNestedDto>();
+
+            CreateMap<Rate, RateDto>()
+                .ForMember(dest => dest.RateType, opt => opt.MapFrom(src => src.RateType))
+                .ForMember(dest => dest.CreatorName, opt => opt.MapFrom(src => src.Creator != null ? src.Creator.Fullname : null))
+                .ForMember(dest => dest.UpdaterName, opt => opt.MapFrom(src => src.Updater != null ? src.Updater.Fullname : null))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt.AddHours(8)))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt.HasValue ? src.UpdatedAt.Value.AddHours(8) : (DateTime?)null));
 
             CreateMap<SystemCode, SystemCodeDto>()
                 .ForMember(dest => dest.CodeType, opt => opt.MapFrom(src => src.CodeType))
@@ -56,6 +65,11 @@ namespace QUANTM.Mappings
             CreateMap<CodeTypeCreateDto, CodeType>();
             CreateMap<SystemCodeCreateDto, SystemCode>();
             CreateMap<SystemCodeUpdateDto, SystemCode>();
+
+            CreateMap<RateCreateDto, Rate>();
+            CreateMap<RateUpdateDto, Rate>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
             CreateMap<UserUpdateDto, User>()
                 .ForMember(dest => dest.IdNo, opt => opt.Ignore())
                 .ForMember(dest => dest.Gender, opt => opt.Ignore())
