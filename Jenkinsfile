@@ -67,6 +67,7 @@ pipeline {
                             --exclude='obj' \
                             --exclude='logs' \
                             --exclude='.env' \
+                            --exclude='Uploads' \
                             ${WORKSPACE}/ /var/www/quantm/quantm-be/
                         
                         echo 'Code sync completed!'

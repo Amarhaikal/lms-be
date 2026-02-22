@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # MySQL Database
@@ -24,11 +24,11 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 1G
+          cpus: "1.0"
+          memory: 1.5G
         reservations:
-          cpus: '0.5'
-          memory: 512M
+          cpus: "0.5"
+          memory: 768M
 
   # ASP.NET Core Backend
   quantm-backend:
@@ -68,13 +68,14 @@ services:
       - quantm-network
     volumes:
       - ./logs:/app/logs
+      - ./Uploads:/app/Uploads
     deploy:
       resources:
         limits:
-          cpus: '0.5'
+          cpus: "0.5"
           memory: 1G
         reservations:
-          cpus: '0.25'
+          cpus: "0.25"
           memory: 512M
 
 networks:
