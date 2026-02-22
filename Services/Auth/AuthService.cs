@@ -548,14 +548,8 @@ namespace QUANTM.Services.Auth
                     .AsQueryable();
 
                 // Filters
-                if (!string.IsNullOrWhiteSpace(p.Fullname))
-                    query = query.Where(s => s.User != null && s.User.Fullname.Contains(p.Fullname));
-
                 if (!string.IsNullOrWhiteSpace(p.Username))
                     query = query.Where(s => s.User != null && s.User.Username.Contains(p.Username));
-
-                if (!string.IsNullOrWhiteSpace(p.Role))
-                    query = query.Where(s => s.User != null && s.User.Role != null && s.User.Role.Code == p.Role);
 
                 if (p.IsActive.HasValue)
                     query = query.Where(s => s.IsActive == p.IsActive.Value);
@@ -578,11 +572,41 @@ namespace QUANTM.Services.Auth
                     query = query.Where(s => s.LastActivityAt >= lastActivityDateUtc);
                 }
 
+                // Sorting
+                if (!string.IsNullOrEmpty(p.SortBy))
+                {
+                    query = p.SortBy.ToLower() switch
+                    {
+                        "username" => p.SortOrder?.ToLower() == "desc"
+                            ? query.OrderByDescending(s => s.User!.Username)
+                            : query.OrderBy(s => s.User!.Username),
+                        "created_at" => p.SortOrder?.ToLower() == "desc"
+                            ? query.OrderByDescending(s => s.CreatedAt)
+                            : query.OrderBy(s => s.CreatedAt),
+                        "expires_at" => p.SortOrder?.ToLower() == "desc"
+                            ? query.OrderByDescending(s => s.ExpiresAt)
+                            : query.OrderBy(s => s.ExpiresAt),
+                        "last_activity_at" => p.SortOrder?.ToLower() == "desc"
+                            ? query.OrderByDescending(s => s.LastActivityAt)
+                            : query.OrderBy(s => s.LastActivityAt),
+                        "logout_at" => p.SortOrder?.ToLower() == "desc"
+                            ? query.OrderByDescending(s => s.LoggedOutAt)
+                            : query.OrderBy(s => s.LoggedOutAt),
+                        "logout_reason" => p.SortOrder?.ToLower() == "desc"
+                            ? query.OrderByDescending(s => s.LogoutReason)
+                            : query.OrderBy(s => s.LogoutReason),
+                        _ => query.OrderByDescending(s => s.CreatedAt)
+                    };
+                }
+                else
+                {
+                    query = query.OrderByDescending(s => s.CreatedAt);
+                }
+
                 // Get total count for pagination
                 var totalCount = await query.CountAsync();
 
                 var sessions = await query
-                    .OrderByDescending(s => s.CreatedAt)
                     .Skip((p.PageNo - 1) * p.PageSize)
                     .Take(p.PageSize)
                     .ToListAsync();
