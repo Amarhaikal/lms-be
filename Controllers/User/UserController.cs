@@ -66,6 +66,35 @@ namespace QUANTM.Controllers.User
                     query = query.Where(u => u.Status != null && u.Status.Code == userListParamsDto.Status);
                 }
 
+                // Apply sorting
+                if (!string.IsNullOrWhiteSpace(userListParamsDto.SortBy))
+                {
+                    query = userListParamsDto.SortBy.ToLower()
+                    switch
+                    {
+                        "fullname" => userListParamsDto.SortOrder?.ToLower() == "desc"
+                            ? query.OrderByDescending(u => u.Fullname)
+                            : query.OrderBy(u => u.Fullname),
+                        "username" => userListParamsDto.SortOrder?.ToLower() == "desc"
+                            ? query.OrderByDescending(u => u.Username)
+                            : query.OrderBy(u => u.Username),
+                        "email" => userListParamsDto.SortOrder?.ToLower() == "desc"
+                            ? query.OrderByDescending(u => u.Email)
+                            : query.OrderBy(u => u.Email),
+                        "role" => userListParamsDto.SortOrder?.ToLower() == "desc"
+                            ? query.OrderByDescending(u => u.Role!.Description)
+                            : query.OrderBy(u => u.Role!.Description),
+                        "status" => userListParamsDto.SortOrder?.ToLower() == "desc"
+                            ? query.OrderByDescending(u => u.Status!.Description)
+                            : query.OrderBy(u => u.Status!.Description),
+                        _ => query.OrderByDescending(u => u.CreatedAt)
+                    };
+                }
+                else
+                {
+                    query = query.OrderByDescending(u => u.CreatedAt);
+                }
+
                 // Get total count before pagination
                 var totalCount = await query.CountAsync();
 
