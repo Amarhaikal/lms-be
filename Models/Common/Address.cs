@@ -11,7 +11,6 @@ public class Address
     public int Id { get; set; }
 
     [Column("address_line_1")]
-    [Required(ErrorMessage = "Address Line 1 is required")]
     [MaxLength(255, ErrorMessage = "Address Line 1 cannot exceed 255 characters")]
     public string? AddressLine1 { get; set; }
 
