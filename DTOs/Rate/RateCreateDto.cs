@@ -12,6 +12,9 @@ public class RateCreateDto
     [MaxLength(255)]
     public string Description { get; set; } = null!;
 
+    [Required(ErrorMessage = "Rate is required")]
+    public decimal Rate { get; set; }
+
     [Required(ErrorMessage = "Rate type code is required (Fixed, Floating, etc.)")]
     public string RateTypeCode { get; set; } = null!;
 }

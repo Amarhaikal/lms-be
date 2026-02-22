@@ -26,6 +26,10 @@ public class Rate
     [Required(ErrorMessage = "Rate Type is required")]
     public int RateTypeId { get; set; }
 
+    [Column("rate", TypeName = "decimal(18, 4)")]
+    [Required(ErrorMessage = "Rate is required")]
+    public decimal RateValue { get; set; }
+
     [ForeignKey("RateTypeId")]
     public SystemCode? RateType { get; set; }
 

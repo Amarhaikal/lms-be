@@ -13,5 +13,7 @@ public class RateBatchUpdateDto
     [MaxLength(255)]
     public string? Description { get; set; }
 
+    public decimal? Rate { get; set; }
+
     public string? RateTypeCode { get; set; }
 }

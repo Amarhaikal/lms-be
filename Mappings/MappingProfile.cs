@@ -23,6 +23,7 @@ namespace QUANTM.Mappings
             CreateMap<SystemCode, SystemCodeNestedDto>();
 
             CreateMap<Rate, RateDto>()
+                .ForMember(dest => dest.Rate, opt => opt.MapFrom(src => src.RateValue))
                 .ForMember(dest => dest.RateType, opt => opt.MapFrom(src => src.RateType))
                 .ForMember(dest => dest.CreatorName, opt => opt.MapFrom(src => src.Creator != null ? src.Creator.Fullname : null))
                 .ForMember(dest => dest.UpdaterName, opt => opt.MapFrom(src => src.Updater != null ? src.Updater.Fullname : null))
@@ -66,8 +67,11 @@ namespace QUANTM.Mappings
             CreateMap<SystemCodeCreateDto, SystemCode>();
             CreateMap<SystemCodeUpdateDto, SystemCode>();
 
-            CreateMap<RateCreateDto, Rate>();
+            CreateMap<RateCreateDto, Rate>()
+                .ForMember(dest => dest.RateValue, opt => opt.MapFrom(src => src.Rate));
+
             CreateMap<RateUpdateDto, Rate>()
+                .ForMember(dest => dest.RateValue, opt => opt.MapFrom(src => src.Rate))
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
             CreateMap<UserUpdateDto, User>()

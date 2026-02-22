@@ -37,6 +37,7 @@ namespace QUANTM.Controllers.Rate
             [FromQuery(Name = "page_size")] int pageSize = 10,
             [FromQuery(Name = "code")] string? code = null,
             [FromQuery(Name = "description")] string? description = null,
+            [FromQuery(Name = "rate")] decimal? rate = null,
             [FromQuery(Name = "rate_type_code")] string? rateTypeCode = null,
             [FromQuery(Name = "sort_by")] string? sortBy = "created_at",
             [FromQuery(Name = "sort_order")] string? sortOrder = "desc")
@@ -55,6 +56,11 @@ namespace QUANTM.Controllers.Rate
                     query = query.Where(x => x.Description != null && x.Description.Contains(description));
                 }
 
+                if (rate.HasValue)
+                {
+                    query = query.Where(x => x.RateValue == rate.Value);
+                }
+
                 if (!string.IsNullOrEmpty(rateTypeCode))
                 {
                     query = query.Where(x => x.RateType != null && x.RateType.Code == rateTypeCode);
@@ -66,6 +72,7 @@ namespace QUANTM.Controllers.Rate
                     {
                         "code" => sortOrder?.ToLower() == "desc" ? query.OrderByDescending(s => s.Code) : query.OrderBy(s => s.Code),
                         "description" => sortOrder?.ToLower() == "desc" ? query.OrderByDescending(s => s.Description) : query.OrderBy(s => s.Description),
+                        "rate" => sortOrder?.ToLower() == "desc" ? query.OrderByDescending(s => s.RateValue) : query.OrderBy(s => s.RateValue),
                         "rate_type" => sortOrder?.ToLower() == "desc" ? query.OrderByDescending(s => s.RateType!.Description) : query.OrderBy(s => s.RateType!.Description),
                         "created_by" => sortOrder?.ToLower() == "desc" ? query.OrderByDescending(s => s.CreatedBy) : query.OrderBy(s => s.CreatedBy),
                         "updated_by" => sortOrder?.ToLower() == "desc" ? query.OrderByDescending(s => s.UpdatedBy) : query.OrderBy(s => s.UpdatedBy),
@@ -257,6 +264,7 @@ namespace QUANTM.Controllers.Rate
 
                     entity.Code = dto.Code ?? entity.Code;
                     entity.Description = dto.Description ?? entity.Description;
+                    entity.RateValue = dto.Rate ?? entity.RateValue;
                     entity.RateTypeId = newRateTypeId;
                     entity.UpdatedAt = now;
                     entity.UpdatedBy = currentUserId;
