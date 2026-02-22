@@ -78,9 +78,9 @@ namespace QUANTM.Controllers.User
                         "username" => userListParamsDto.SortOrder?.ToLower() == "desc"
                             ? query.OrderByDescending(u => u.Username)
                             : query.OrderBy(u => u.Username),
-                        "email" => userListParamsDto.SortOrder?.ToLower() == "desc"
-                            ? query.OrderByDescending(u => u.Email)
-                            : query.OrderBy(u => u.Email),
+                        "staff_id" => userListParamsDto.SortOrder?.ToLower() == "desc"
+                            ? query.OrderByDescending(u => u.StaffId)
+                            : query.OrderBy(u => u.StaffId),
                         "role" => userListParamsDto.SortOrder?.ToLower() == "desc"
                             ? query.OrderByDescending(u => u.Role!.Description)
                             : query.OrderBy(u => u.Role!.Description),
@@ -106,10 +106,10 @@ namespace QUANTM.Controllers.User
 
                 var userDtos = _mapper.Map<List<UserListDto>>(users);
 
-                foreach (var userDto in userDtos)
-                {
-                    userDto.IdNo = _encryptionService.Decrypt(userDto.IdNo);
-                }
+                // foreach (var userDto in userDtos)
+                // {
+                //     userDto.IdNo = _encryptionService.Decrypt(userDto.IdNo);
+                // }
 
                 return CResponseGetListSuccessful(userDtos, totalCount, userListParamsDto.PageNo, userListParamsDto.PageSize);
             }
