@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using QUANTM.Models.User;
 using QUANTM.Models.Parameter;
 using QUANTM.Models.Common;
+using QUANTM.Models.Rate;
 
 namespace QUANTM.Data
 {
@@ -27,6 +28,9 @@ namespace QUANTM.Data
 
         // Sessions
         public DbSet<Models.Session.Session> Sessions { get; set; }
+
+        // Rates
+        public DbSet<Rate> Rates { get; set; }
 
         // Audit Logs
         public DbSet<Models.Audit.AuditLog> AuditLogs { get; set; }
