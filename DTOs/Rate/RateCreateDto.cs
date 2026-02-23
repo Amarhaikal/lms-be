@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using QUANTM.DTOs.Common;
 
 namespace QUANTM.DTOs.Rate;
 
@@ -15,6 +17,7 @@ public class RateCreateDto
     [Required(ErrorMessage = "Rate is required")]
     public decimal Rate { get; set; }
 
-    [Required(ErrorMessage = "Rate type code is required (Fixed, Floating, etc.)")]
-    public string RateTypeCode { get; set; } = null!;
+    [Required(ErrorMessage = "Rate type is required")]
+    [JsonPropertyName("rate_type")]
+    public CodeReferenceDto RateType { get; set; } = null!;
 }

@@ -13,10 +13,8 @@ public class RateDto
     public SystemCodeNestedDto? RateType { get; set; }
 
     // Audit Fields
-    public int? CreatedBy { get; set; }
-    public string? CreatorName { get; set; }
+    public string? CreatedBy { get; set; }
     public DateTime CreatedAt { get; set; }
-    public int? UpdatedBy { get; set; }
-    public string? UpdaterName { get; set; }
+    public string? UpdatedBy { get; set; }
     public DateTime? UpdatedAt { get; set; }
 }

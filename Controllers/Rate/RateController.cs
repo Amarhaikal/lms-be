@@ -16,19 +16,24 @@ namespace QUANTM.Controllers.Rate
     [ApiController]
     public class RateController : BaseApiController
     {
-        private readonly ILogger<RateController> _logger;
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IdentityService _identityService;
         private readonly AuditService _auditService;
+        private readonly ILogger<RateController> _logger;
 
-        public RateController(ILogger<RateController> logger, ApplicationDbContext context, IMapper mapper, IdentityService identityService, AuditService auditService)
+        public RateController(
+            ApplicationDbContext context,
+            IMapper mapper,
+            IdentityService identityService,
+            AuditService auditService,
+            ILogger<RateController> logger)
         {
-            _logger = logger;
             _context = context;
             _mapper = mapper;
             _identityService = identityService;
             _auditService = auditService;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -115,19 +120,34 @@ namespace QUANTM.Controllers.Rate
                     return CResponseInvalidDataToSave();
                 }
 
-                var requestedRateTypes = body.Select(b => b.RateTypeCode).Distinct().ToList();
+                var requestedRateTypes = body
+                    .Where(b => b.RateType != null && !string.IsNullOrEmpty(b.RateType.Code))
+                    .Select(b => b.RateType.Code!)
+                    .Distinct()
+                    .ToList();
+
+                _logger.LogInformation("mylogs Requested Rate Types: {Requested}", string.Join(", ", requestedRateTypes));
 
                 var rateTypes = await _context.SystemCodes
-                    .Where(sc => requestedRateTypes.Contains(sc.Code))
+                    .Include(sc => sc.CodeType)
+                    .Where(sc => requestedRateTypes.Contains(sc.Code) && sc.CodeType!.Code == "RATE_TYPE")
                     .ToListAsync();
 
-                if (rateTypes.Count != requestedRateTypes.Count)
+                _logger.LogInformation("mylogs Found Rate Types from DB: {Found}", string.Join(", ", rateTypes.Select(rt => $"{rt.Code}({rt.Id})")));
+
+                var foundCodes = rateTypes.Select(ct => ct.Code).Distinct().ToList();
+                var missingTypes = requestedRateTypes.Where(r => !foundCodes.Contains(r)).ToList();
+
+                if (missingTypes.Any())
                 {
-                    var missingTypes = requestedRateTypes.Except(rateTypes.Select(ct => ct.Code)).ToList();
+                    _logger.LogWarning("mylogs Missing Rate Types: {Missing}", string.Join(", ", missingTypes));
                     return CResponseException($"The following rate types do not exist: {string.Join(", ", missingTypes)}");
                 }
 
-                var rateTypeMap = rateTypes.ToDictionary(ct => ct.Code, ct => ct.Id);
+                // Use ToDictionary with a grouping check to handle potential duplicates in DB safely
+                var rateTypeMap = rateTypes
+                    .GroupBy(ct => ct.Code)
+                    .ToDictionary(g => g.Key, g => g.First().Id);
 
                 // Check for duplicates in the incoming array
                 var duplicateCodesInBody = body.GroupBy(x => x.Code)
@@ -156,7 +176,7 @@ namespace QUANTM.Controllers.Rate
                 foreach (var item in body)
                 {
                     var rate = _mapper.Map<Models.Rate.Rate>(item);
-                    rate.RateTypeId = rateTypeMap[item.RateTypeCode];
+                    rate.RateTypeId = rateTypeMap[item.RateType!.Code!];
                     rate.CreatedAt = now;
                     rate.CreatedBy = currentUserId;
                     rates.Add(rate);
@@ -186,7 +206,7 @@ namespace QUANTM.Controllers.Rate
 
         [Authorize(Roles = "SA,ADM")]
         [HttpPut]
-        public async Task<IActionResult> UpdateRates([FromBody] List<RateBatchUpdateDto> body)
+        public async Task<IActionResult> UpdateRates([FromBody] List<RateUpdateDto> body)
         {
             try
             {
@@ -212,8 +232,8 @@ namespace QUANTM.Controllers.Rate
                 var oldRatesDto = _mapper.Map<List<RateDto>>(rates);
 
                 var requestedRateTypes = body
-                    .Where(b => !string.IsNullOrEmpty(b.RateTypeCode))
-                    .Select(b => b.RateTypeCode!)
+                    .Where(b => b.RateType != null && !string.IsNullOrEmpty(b.RateType.Code))
+                    .Select(b => b.RateType!.Code)
                     .Distinct()
                     .ToList();
 
@@ -221,15 +241,21 @@ namespace QUANTM.Controllers.Rate
                 if (requestedRateTypes.Any())
                 {
                     var rateTypes = await _context.SystemCodes
-                        .Where(ct => requestedRateTypes.Contains(ct.Code))
+                        .Include(sc => sc.CodeType)
+                        .Where(ct => requestedRateTypes.Contains(ct.Code) && ct.CodeType!.Code == "RATE_TYPE")
                         .ToListAsync();
 
-                    if (rateTypes.Count != requestedRateTypes.Count)
+                    var foundCodes = rateTypes.Select(ct => ct.Code).Distinct().ToList();
+                    var missingTypes = requestedRateTypes.Where(r => !foundCodes.Contains(r!)).ToList();
+
+                    if (missingTypes.Any())
                     {
-                        var missingTypes = requestedRateTypes.Except(rateTypes.Select(ct => ct.Code)).ToList();
                         return CResponseException($"The following rate types do not exist: {string.Join(", ", missingTypes)}");
                     }
-                    rateTypeMap = rateTypes.ToDictionary(ct => ct.Code, ct => ct.Id);
+
+                    rateTypeMap = rateTypes
+                        .GroupBy(ct => ct.Code)
+                        .ToDictionary(g => g.Key, g => g.First().Id);
                 }
 
                 var currentUserId = _identityService.GetUserId();
@@ -240,8 +266,8 @@ namespace QUANTM.Controllers.Rate
                     var entity = rates.First(x => x.Id == dto.Id);
 
                     var newCode = dto.Code ?? entity.Code;
-                    var newRateTypeId = !string.IsNullOrEmpty(dto.RateTypeCode)
-                        ? rateTypeMap[dto.RateTypeCode]
+                    var newRateTypeId = dto.RateType != null && !string.IsNullOrEmpty(dto.RateType.Code)
+                        ? rateTypeMap[dto.RateType.Code]
                         : entity.RateTypeId;
 
                     var isExistInDb = await _context.Rates.AnyAsync(x =>

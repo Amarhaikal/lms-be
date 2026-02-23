@@ -25,8 +25,8 @@ namespace QUANTM.Mappings
             CreateMap<Rate, RateDto>()
                 .ForMember(dest => dest.Rate, opt => opt.MapFrom(src => src.RateValue))
                 .ForMember(dest => dest.RateType, opt => opt.MapFrom(src => src.RateType))
-                .ForMember(dest => dest.CreatorName, opt => opt.MapFrom(src => src.Creator != null ? src.Creator.Fullname : null))
-                .ForMember(dest => dest.UpdaterName, opt => opt.MapFrom(src => src.Updater != null ? src.Updater.Fullname : null))
+                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.Creator != null ? src.Creator.Username : null))
+                .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.Updater != null ? src.Updater.Username : null))
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt.AddHours(8)))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt.HasValue ? src.UpdatedAt.Value.AddHours(8) : (DateTime?)null));
 
@@ -68,10 +68,12 @@ namespace QUANTM.Mappings
             CreateMap<SystemCodeUpdateDto, SystemCode>();
 
             CreateMap<RateCreateDto, Rate>()
-                .ForMember(dest => dest.RateValue, opt => opt.MapFrom(src => src.Rate));
+                .ForMember(dest => dest.RateValue, opt => opt.MapFrom(src => src.Rate))
+                .ForMember(dest => dest.RateType, opt => opt.Ignore());
 
             CreateMap<RateUpdateDto, Rate>()
                 .ForMember(dest => dest.RateValue, opt => opt.MapFrom(src => src.Rate))
+                .ForMember(dest => dest.RateType, opt => opt.Ignore())
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
             CreateMap<UserUpdateDto, User>()
