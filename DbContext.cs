@@ -60,11 +60,13 @@ namespace QUANTM.Data
             {
                 entity.HasOne(sc => sc.CreatedByUser)
                     .WithMany()
-                    .HasForeignKey(sc => sc.CreatedBy);
+                    .HasForeignKey(sc => sc.CreatedBy)
+                    .OnDelete(DeleteBehavior.SetNull);
 
                 entity.HasOne(sc => sc.UpdatedByUser)
                     .WithMany()
-                    .HasForeignKey(sc => sc.UpdatedBy);
+                    .HasForeignKey(sc => sc.UpdatedBy)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
 
             // Configure Audit relationships for CodeType
@@ -72,11 +74,13 @@ namespace QUANTM.Data
             {
                 entity.HasOne(ct => ct.CreatedByUser)
                     .WithMany()
-                    .HasForeignKey(ct => ct.CreatedBy);
+                    .HasForeignKey(ct => ct.CreatedBy)
+                    .OnDelete(DeleteBehavior.SetNull);
 
                 entity.HasOne(ct => ct.UpdatedByUser)
                     .WithMany()
-                    .HasForeignKey(ct => ct.UpdatedBy);
+                    .HasForeignKey(ct => ct.UpdatedBy)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
 
             // Configure Audit relationships for Document
@@ -84,12 +88,61 @@ namespace QUANTM.Data
             {
                 entity.HasOne(d => d.CreatedByUser)
                     .WithMany()
-                    .HasForeignKey(d => d.CreatedBy);
+                    .HasForeignKey(d => d.CreatedBy)
+                    .OnDelete(DeleteBehavior.SetNull);
 
                 entity.HasOne(d => d.UpdatedByUser)
                     .WithMany()
-                    .HasForeignKey(d => d.UpdatedBy);
+                    .HasForeignKey(d => d.UpdatedBy)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
+
+            // Configure Audit relationships for Rate
+            modelBuilder.Entity<Rate>(entity =>
+            {
+                entity.HasOne(r => r.Creator)
+                    .WithMany()
+                    .HasForeignKey(r => r.CreatedBy)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasOne(r => r.Updater)
+                    .WithMany()
+                    .HasForeignKey(r => r.UpdatedBy)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // Configure User self-references
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasOne(u => u.Creator)
+                    .WithMany()
+                    .HasForeignKey(u => u.CreatedBy)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasOne(u => u.Updater)
+                    .WithMany()
+                    .HasForeignKey(u => u.UpdatedBy)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // Configure User-dependent entities (Cascade)
+            modelBuilder.Entity<Models.Session.Session>()
+                .HasOne(s => s.User)
+                .WithMany(u => u.Sessions)
+                .HasForeignKey(s => s.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Models.Auth.PasswordHistory>()
+                .HasOne(ph => ph.User)
+                .WithMany(u => u.PasswordHistories)
+                .HasForeignKey(ph => ph.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Models.Audit.AuditLog>()
+                .HasOne<User>()
+                .WithMany()
+                .HasForeignKey(al => al.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             // Configure relationships for MenuRole
             modelBuilder.Entity<MenuRole>()
