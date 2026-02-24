@@ -5,8 +5,8 @@ using QUANTM.DTOs.User;
 using QUANTM.Models.Common;
 using QUANTM.Models.Parameter;
 using QUANTM.Models.User;
-using QUANTM.DTOs.Rate;
-using QUANTM.Models.Rate;
+using QUANTM.DTOs.Rates;
+using QUANTM.Models.Ref;
 namespace QUANTM.Mappings
 {
     public class MappingProfile : Profile

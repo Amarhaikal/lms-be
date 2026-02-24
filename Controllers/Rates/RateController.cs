@@ -1,18 +1,17 @@
 using AutoMapper;
 using QUANTM.Controllers.Common;
 using QUANTM.Data;
-using QUANTM.DTOs.Rate;
-using QUANTM.Model.Common;
-using QUANTM.Models.Rate;
+using QUANTM.DTOs.Rates;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QUANTM.Services.Auth;
+using QUANTM.Models.Ref;
 
-namespace QUANTM.Controllers.Rate
+namespace QUANTM.Controllers.Rates
 {
     [Authorize]
-    [Route("api/rate")]
+    [Route("api/rates")]
     [ApiController]
     public class RateController : BaseApiController
     {
@@ -169,13 +168,13 @@ namespace QUANTM.Controllers.Rate
                     }
                 }
 
-                var rates = new List<Models.Rate.Rate>();
+                var rates = new List<Rate>();
                 var currentUserId = _identityService.GetUserId();
                 var now = DateTime.UtcNow;
 
                 foreach (var item in body)
                 {
-                    var rate = _mapper.Map<Models.Rate.Rate>(item);
+                    var rate = _mapper.Map<Rate>(item);
                     rate.RateTypeId = rateTypeMap[item.RateType!.Code!];
                     rate.CreatedAt = now;
                     rate.CreatedBy = currentUserId;

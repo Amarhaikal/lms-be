@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using QUANTM.Models.Parameter;
 using UserEntity = QUANTM.Models.User.User;
 
-namespace QUANTM.Models.Rate;
+namespace QUANTM.Models.Ref;
 
 [Table("rates")]
 public class Rate

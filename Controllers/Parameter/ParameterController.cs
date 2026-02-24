@@ -32,7 +32,7 @@ namespace QUANTM.Controllers.Parameter
             _auditService = auditService;
         }
 
-        [HttpGet("codeType")]
+        [HttpGet("codeTypes")]
         public async Task<IActionResult> GetCodeTypeAndSystemCode()
         {
             try
@@ -55,7 +55,7 @@ namespace QUANTM.Controllers.Parameter
             }
         }
 
-        [HttpGet("codeType/{id}")]
+        [HttpGet("codeTypes/{id}")]
         public async Task<IActionResult> GetCodeType(int id)
         {
             try
@@ -84,7 +84,7 @@ namespace QUANTM.Controllers.Parameter
         }
 
         [Authorize(Roles = "SA,ADM")]
-        [HttpPost("codeType")]
+        [HttpPost("codeTypes")]
         public async Task<IActionResult> CreateCodeType([FromBody] CodeTypeCreateDto body)
         {
             try
@@ -130,7 +130,7 @@ namespace QUANTM.Controllers.Parameter
         }
 
         [Authorize(Roles = "SA,ADM")]
-        [HttpPut("codeType/{id}")]
+        [HttpPut("codeTypes/{id}")]
         public async Task<IActionResult> UpdateCodeType(int id, [FromBody] CodeTypeUpdateDto body)
         {
             try
@@ -216,7 +216,7 @@ namespace QUANTM.Controllers.Parameter
             }
         }
 
-        [HttpGet("systemCode")]
+        [HttpGet("systemCodes")]
         public async Task<IActionResult> GetSystemCode([FromQuery] SystemCodeListParamsDto paramsList)
         {
             try
@@ -283,64 +283,6 @@ namespace QUANTM.Controllers.Parameter
                 var systemCodeDto = _mapper.Map<List<SystemCodeDto>>(systemCodes);
 
                 return CResponseGetListSuccessful(systemCodeDto, totalCount, paramsList.PageNo, paramsList.PageSize);
-            }
-            catch (Exception ex)
-            {
-                return CResponseException(ex.Message);
-            }
-        }
-
-        [Authorize(Roles = "SA,ADM")]
-        [HttpPost("systemCode")]
-        public async Task<IActionResult> CreateSystemCode([FromBody] SystemCodeCreateDto body)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return CResponseInvalidDataToSave();
-                }
-
-                var codeType = await _context.CodeTypes.FirstOrDefaultAsync(x => x.Code == body.CodeTypeCode);
-                if (codeType == null)
-                {
-                    var response = new ApiResponse<string>
-                    {
-                        Status = 400,
-                        Message = "Code type does not exist"
-                    };
-                    return BadRequest(response);
-                }
-
-                var isSystemCodeInSameCodeTypeExist = await _context.SystemCodes.AnyAsync(x => x.Code == body.Code && x.CodeType != null && x.CodeType.Code == body.CodeTypeCode);
-                if (isSystemCodeInSameCodeTypeExist)
-                {
-                    var response = new ApiResponse<string>
-                    {
-                        Status = 400,
-                        Message = "System code already exists"
-                    };
-                    return BadRequest(response);
-                }
-
-                var systemCode = _mapper.Map<SystemCode>(body);
-                systemCode.CodeTypeId = codeType?.Id ?? 0;
-                systemCode.CreatedAt = DateTime.UtcNow;
-                systemCode.CreatedBy = _identityService.GetUserId();
-                _context.SystemCodes.Add(systemCode);
-                await _context.SaveChangesAsync();
-
-                var systemCodeDto = _mapper.Map<SystemCodeDto>(systemCode);
-
-                await _auditService.LogAsync(
-                    action: "Create System Code",
-                    module: "System Parameters",
-                    entityType: "SystemCode",
-                    entityId: systemCode.Id,
-                    newValues: systemCodeDto
-                );
-
-                return CResponseCreateSuccessful(systemCodeDto);
             }
             catch (Exception ex)
             {
@@ -422,80 +364,6 @@ namespace QUANTM.Controllers.Parameter
             }
         }
 
-        [Authorize(Roles = "SA,ADM")]
-        [HttpPut("systemCode/{id}")]
-        public async Task<IActionResult> UpdateSystemCode(int id, [FromBody] SystemCodeUpdateDto body)
-        {
-            try
-            {
-                if (body == null || !ModelState.IsValid)
-                {
-                    return CResponseInvalidDataToSave();
-                }
-
-                var systemCode = await _context.SystemCodes.FindAsync(id);
-                if (systemCode == null)
-                {
-                    return CResponseNotFound();
-                }
-
-                var oldSystemCodeDto = _mapper.Map<SystemCodeDto>(systemCode);
-
-                // If CodeTypeCode is provided, look up the CodeType and update CodeTypeId
-                if (!string.IsNullOrEmpty(body.CodeTypeCode))
-                {
-                    var codeType = await _context.CodeTypes.FirstOrDefaultAsync(x => x.Code == body.CodeTypeCode);
-                    if (codeType == null)
-                    {
-                        var response = new ApiResponse<string>
-                        {
-                            Status = 400,
-                            Message = "Code type does not exist"
-                        };
-                        return BadRequest(response);
-                    }
-                    systemCode.CodeTypeId = codeType.Id;
-                }
-
-                systemCode.Code = body.Code ?? systemCode.Code;
-                systemCode.Description = body.Description ?? systemCode.Description;
-
-                var isSystemCodeInSameCodeTypeExist = await _context.SystemCodes.AnyAsync(x => x.Id != id && x.Code == systemCode.Code && x.CodeTypeId == systemCode.CodeTypeId);
-                if (isSystemCodeInSameCodeTypeExist)
-                {
-                    var response = new ApiResponse<string>
-                    {
-                        Status = 400,
-                        Message = "System code already exists"
-                    };
-                    return BadRequest(response);
-                }
-
-                systemCode.UpdatedAt = DateTime.UtcNow;
-                systemCode.UpdatedBy = _identityService.GetUserId();
-
-                await _context.SaveChangesAsync();
-
-                var systemCodeDto = _mapper.Map<SystemCodeDto>(systemCode);
-
-                await _auditService.LogAsync(
-                    action: "Update System Code",
-                    module: "System Parameters",
-                    entityType: "SystemCode",
-                    entityId: systemCode.Id,
-                    oldValues: oldSystemCodeDto,
-                    newValues: systemCodeDto
-                );
-
-                return CResponseUpdateSuccessful(systemCodeDto);
-            }
-            catch (Exception ex)
-            {
-                return CResponseException(ex.Message);
-            }
-        }
-
-        [Authorize(Roles = "SA,ADM")]
         [HttpPut("systemCodes")]
         public async Task<IActionResult> UpdateSystemCodes([FromBody] List<SystemCodeBatchUpdateDto> body)
         {
@@ -601,39 +469,6 @@ namespace QUANTM.Controllers.Parameter
                 );
 
                 return CResponseUpdateSuccessful(systemCodesDto);
-            }
-            catch (Exception ex)
-            {
-                return CResponseException(ex.Message);
-            }
-        }
-
-        [Authorize(Roles = "SA,ADM")]
-        [HttpDelete("systemCode/{id}")]
-        public async Task<IActionResult> DeleteSystemCode(int id)
-        {
-            try
-            {
-                var systemCode = await _context.SystemCodes.FindAsync(id);
-                if (systemCode == null)
-                {
-                    return CResponseNotFound();
-                }
-
-                var oldSystemCodeDto = _mapper.Map<SystemCodeDto>(systemCode);
-
-                _context.SystemCodes.Remove(systemCode);
-                await _context.SaveChangesAsync();
-
-                await _auditService.LogAsync(
-                    action: "Delete System Code",
-                    module: "System Parameters",
-                    entityType: "SystemCode",
-                    entityId: id,
-                    oldValues: oldSystemCodeDto
-                );
-
-                return CResponseDeleteSuccessful();
             }
             catch (Exception ex)
             {

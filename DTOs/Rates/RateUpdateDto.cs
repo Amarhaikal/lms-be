@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using QUANTM.DTOs.Common;
 
-namespace QUANTM.DTOs.Rate;
+namespace QUANTM.DTOs.Rates;
 
 public class RateUpdateDto
 {

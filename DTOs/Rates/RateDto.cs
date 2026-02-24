@@ -1,6 +1,6 @@
 using QUANTM.DTOs.Parameter;
 
-namespace QUANTM.DTOs.Rate;
+namespace QUANTM.DTOs.Rates;
 
 public class RateDto
 {

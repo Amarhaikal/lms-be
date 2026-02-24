@@ -10,7 +10,7 @@ using QUANTM.Model.Common;
 
 namespace QUANTM.Controllers.User
 {
-    [Route("api/user")]
+    [Route("api/users")]
     [ApiController]
     public class UserController : BaseApiController
     {
@@ -34,7 +34,7 @@ namespace QUANTM.Controllers.User
         }
 
         [Authorize]
-        [HttpGet("list")]
+        [HttpGet]
         public async Task<IActionResult> GetUsers([FromQuery] UserListParamsDto userListParamsDto)
         {
             try

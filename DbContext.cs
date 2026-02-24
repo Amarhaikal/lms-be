@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using QUANTM.Models.User;
 using QUANTM.Models.Parameter;
 using QUANTM.Models.Common;
-using QUANTM.Models.Rate;
+using QUANTM.Models.Ref;
 
 namespace QUANTM.Data
 {
